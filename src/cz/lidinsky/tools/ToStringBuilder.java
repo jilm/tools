@@ -29,7 +29,7 @@ public class ToStringBuilder {
     this.style = style;
   }
 
-  protected StringBuffer sb = new StringBuffer();
+  protected StringBuilder sb = new StringBuilder();
 
   public ToStringBuilder append(String fieldName, IToStringBuildable object) {
     if (fieldName != null) {
@@ -96,7 +96,6 @@ public class ToStringBuilder {
     return this;
   }
 
-
   public ToStringBuilder append(Object object) {
     if (object != null) {
       appendValue(object);
@@ -108,11 +107,84 @@ public class ToStringBuilder {
     style.appendValue(sb, value);
   }
 
+  public ToStringBuilder append(long value) {
+    style.appendValue(sb, value);
+  }
+
+  public ToStringBuilder append(boolean value) {
+    style.appendValue(sb, value);
+  }
+
+  public ToStringBuilder append(float value) {
+    style.appendValue(sb, value);
+  }
+
+  public ToStringBuilder append(double value) {
+    style.appendValue(sb, value);
+  }
+
   public ToStringBuilder append(String fieldName, IToStringBuildable[] value) {
     if (fieldName != null) {
       style.appendFieldName(sb, fieldName);
       appendValue(value);
     }
+    return this;
+  }
+
+  public ToStringBuilder append(String fieldName, Object[] value) {
+    if (fieldName != null) {
+      style.appendFieldName(sb, fieldName);
+      appendValue(value);
+    }
+  }
+
+  public ToStringBuilder append(String fieldName, int[] value) {
+    style.append(sb, fieldName, value);
+    return this;
+  }
+
+  public ToStringBuilder append(String fieldName, long[] value) {
+    style.append(sb, fieldName, value);
+    return this;
+  }
+
+  public ToStringBuilder append(String fieldName, boolean[] value) {
+    style.append(sb, fieldName, value);
+    return this;
+  }
+
+  public ToStringBuilder append(String fieldName, float[] value) {
+    style.append(sb, fieldName, value);
+    return this;
+  }
+
+  public ToStringBuilder append(String fieldName, double[] value) {
+    style.append(sb, fieldName, value);
+    return this;
+  }
+
+  public ToStringBuilder append(int[] value) {
+    style.append(value);
+    return this;
+  }
+
+  public ToStringBuilder append(long[] value) {
+    style.append(value);
+    return this;
+  }
+
+  public ToStringBuilder append(boolean[] value) {
+    style.append(value);
+    return this;
+  }
+
+  public ToStringBuilder append(float[] value) {
+    style.append(value);
+    return this;
+  }
+
+  public ToStringBuilder append(double[] value) {
+    style.append(value);
     return this;
   }
 

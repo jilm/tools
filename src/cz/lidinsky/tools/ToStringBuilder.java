@@ -23,256 +23,154 @@ import java.util.Set;
 
 public class ToStringBuilder {
 
-  private ToStringStyle style;
+  private DefaultToStringStyle style;
 
-  public ToStringBuilder(ToStringStyle style) {
+  public ToStringBuilder(DefaultToStringStyle style) {
     this.style = style;
   }
 
-  /**
-   *  Writes the given object in the following form:
-   *
-   *  <pre>
-   *  <indent><fieldName>r'='<className>'@'<hashCode>'['
-   *  <indent+><objectContent>
-   *  ']'
-   *  </pre>
-   */
+  protected StringBuffer sb = new StringBuffer();
+
   public ToStringBuilder append(String fieldName, IToStringBuildable object) {
-    if (fieldName == null && object == null) {
-      return this;
-    } else if (fieldName == null) {
-      return append(object);
-    } else if (object == null) {
-      appendFieldName(fieldName);
-      style.appendNull()
-	   .appendFieldsDelimiter();
-    } else {
-      appendFieldName(fieldName);
-      style.appendClassName(object)
-	   .appendHash(object)
-	   .startObject();
-      object.toString(this);
-      style.endObject()
-	   .appendFieldsDelimiter();
+    if (fieldName != null) {
+      style.appendFieldName(sb, fieldName);
+      appendValue(object);
+      style.appendFieldDelimiter(sb);
     }
     return this;
   }
 
-  /**
-   *  Writes the given object in the following form:
-   *
-   *  <pre>
-   *  <indent><fieldName>'='<className>'@'<hashCode>'['
-   *  <indent+><objectContent>
-   *  ']'
-   *  </pre>
-   */
   public ToStringBuilder append(String fieldName, Object object) {
-    if (fieldName == null && object == null) {
-      return this;
-    } else if (fieldName == null) {
-      return append(object);
-    } else if (object == null) {
-      appendFieldName(fieldName);
-      style.appendNull()
-	   .appendFieldsDelimiter();
-    } else {
-      appendFieldName(fieldName);
-      append(object);
-    }
-    return this;
-  }
-
-  public ToStringBuilder append(String fieldName, Object[] array) {
-    if (fieldName == null && array == null) {
-      return this;
-    } else if (fieldName == null) {
-      return append(array);
-    } else if (array == null) {
-      appendFieldName(fieldName);
-      style.appendNull();
-      style.appendFieldsDelimiter();
-    } else {
-      appendFieldName(fieldName);
-      style.appendClassName(array)
-	   .appendHash(array)
-           .startArray();
-      for (Object object : array) {
-	append(object);
-	style.appendArrayDelimiter();
-      }
-      style.endArray();
-      style.appendFieldsDelimiter();
-    }
-    return this;
-  }
-
-  public ToStringBuilder append(String fieldName, Iterable field) {
-
-    if (fieldName == null && field == null) {
-      return this;
-    } else if (fieldName == null) {
-      append(field);
-    } else if (field == null) {
-      appendFieldName(fieldName);
-      style.appendNull();
-      style.appendFieldsDelimiter();
-    } else {
-      appendFieldName(fieldName);
-      append(field);
-    }
-    return this;
-  }
-
-  public ToStringBuilder append(String fieldName, int[] array) {
-    appendFieldName(fieldName);
-    if (array == null) {
-      style.appendNull();
-    } else {
-      style.startArray();
-      for (int i : array) {
-	style.append(i);
-	style.appendArrayDelimiter();
-      }
-      style.endArray();
-    }
-    style.appendFieldsDelimiter();
-    return this;
-  }
-
-  public ToStringBuilder append(String fieldName, Map field) {
-    if (fieldName == null && field == null) {
-      return this;
-    } else if (fieldName == null) {
-      append(field);
-    } else if (field == null) {
-      appendNullField(fieldName);
-    } else {
-      appendFieldName(fieldName);
-      append(field);
-    }
-    return this;
-  }
-
-  public ToStringBuilder append(int[] array) {
-    if (array == null) {
-      style.appendNull();
-    } else {
-      style.startArray();
-      for (int i : array) {
-	style.append(i);
-	style.appendArrayDelimiter();
-      }
-      style.endArray();
-    }
-    style.appendFieldsDelimiter();
-    return this;
-  }
-
-  public ToStringBuilder append(Iterable field) {
-    if (field == null) {
-      style.appendNull();
-    } else {
-      style.startArray();
-      for (Object element : field) {
-	append(element);
-	style.appendArrayDelimiter();
-      }
-      style.endArray();
-    }
-    style.appendFieldsDelimiter();
-    return this;
-  }
-
-  protected void appendFieldName(String fieldName) {
     if (fieldName != null) {
-      style.appendFieldName(fieldName);
-      style.appendFieldValueDelimiter();
+      style.appendFieldName(sb, fieldName);
+      appendValue(object);
+      style.appendFieldDelimiter(sb);
+    }
+    return this;
+  }
+
+  public ToStringBuilder append(String fieldName, int value) {
+    if (fieldName != null) {
+      style.appendFieldName(sb, fieldName);
+      style.appendValue(sb, value);
+      style.appendFieldDelimiter(sb);
     }
   }
 
-  protected void appendNullField(String fieldName) {
+  public ToStringBuilder append(String fieldName, long value) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
-      style.appendNull();
+      style.appendFieldName(sb, fieldName);
+      style.appendValue(sb, value);
+      style.appendFieldDelimiter(sb);
+    }
+  }
+
+  public ToStringBuilder append(String fieldName, boolean value) {
+    if (fieldName != null) {
+      style.appendFieldName(sb, fieldName);
+      style.appendValue(sb, value);
+      style.appendFieldDelimiter(sb);
+    }
+  }
+
+  public ToStringBuilder append(String fieldName, float value) {
+    if (fieldName != null) {
+      style.appendFieldName(sb, fieldName);
+      style.appendValue(sb, value);
+      style.appendFieldDelimiter(sb);
+    }
+  }
+
+  public ToStringBuilder append(String fieldName, double value) {
+    if (fieldName != null) {
+      style.appendFieldName(sb, fieldName);
+      style.appendValue(sb, value);
+      style.appendFieldDelimiter(sb);
     }
   }
 
   public ToStringBuilder append(IToStringBuildable object) {
     if (object != null) {
-      style.appendClassName(object)
-	   .appendHash(object)
-	   .startObject();
-      object.toString(this);
-      style.endObject();
-      style.appendFieldsDelimiter();
+      appendValue(object);
     }
     return this;
   }
 
-  public ToStringBuilder append(String text) {
-    if (text != null) {
-      style.appendText(text);
-      style.appendFieldsDelimiter();
-    }
-    return this;
-  }
-
-  public ToStringBuilder append(Object[] array) {
-    if (array != null) {
-      style.startArray();
-      for (Object object : array) {
-	append(object);
-	style.appendArrayDelimiter();
-      }
-      style.endArray();
-      style.appendFieldsDelimiter();
-    }
-    return this;
-  }
-
-  public ToStringBuilder append(Map field) {
-    if (field != null) {
-      style.startArray();
-      Set keys = field.keySet();
-      for (Object key : keys) {
-	append(key);
-	style.appendFieldsDelimiter();
-	append(field.get(key));
-	style.appendArrayDelimiter();
-      }
-      style.endArray();
-      style.appendFieldsDelimiter();
-    }
-    return this;
-  }
 
   public ToStringBuilder append(Object object) {
-    if (object == null) {
-      style.appendNull();
-    } else if (object instanceof IToStringBuildable) {
-      append((IToStringBuildable)object);
-    } else if (object instanceof Iterable) {
-      append((Iterable)object);
-    } else if (object instanceof Map) {
-      append((Map)object);
-    } else if (object instanceof int[]) {
-      append((int[])object);
-    } else {
-      IToStringBuildable decorator = ToStringDecoratorFactory.decorate(object);
-      if (decorator == null) {
-        style.appendObject(object);
-      } else {
-	append(decorator);
-      }
-      style.appendFieldsDelimiter();
+    if (object != null) {
+      appendValue(object);
     }
     return this;
   }
 
-  public String toString() {
-    return style.toString();
+  public ToStringBuilder append(int value) {
+    style.appendValue(sb, value);
+  }
+
+  public ToStringBuilder append(String fieldName, IToStringBuildable[] value) {
+    if (fieldName != null) {
+      style.appendFieldName(sb, fieldName);
+      appendValue(value);
+    }
+    return this;
+  }
+
+  protected void appendValue(IToStringBuildable object) {
+    if (object == null) {
+      style.appendNull(sb);
+    } else {
+      style.appendClassName(sb, object.getClass());
+      style.appendHashCode(sb, object);
+      style.startObject(sb);
+      object.toString(this);
+      style.endObject(sb);
+    }
+  }
+
+  protected void appendValue(IToStringBuildable[] value) {
+    if (value == null) {
+      style.appendNull(sb);
+    } else {
+      style.appendClassName(sb, value.getClass());
+      style.appendHashCode(sb, value);
+      style.startArray(sb);
+      for (int i = 0; i < style.getArraySize(value.length); i++) {
+        appendValue(value[i]);
+        style.appendArrayDelimiter(sb);
+      }
+      style.endArray(sb, value.length);
+    }
+  }
+
+  protected void appendValue(Object[] value) {
+    if (value == null) {
+      style.appendNull(sb);
+    } else {
+      style.appendClassName(sb, value.getClass());
+      style.appendHashCode(sb, value);
+      style.startArray(sb);
+      for (int i = 0; i < style.getArraySize(value.length); i++) {
+        appendValue(value[i]);
+        style.appendArrayDelimiter(sb);
+      }
+      style.endArray(sb, value.length);
+    }
+  }
+
+  protected void appendValue(Object object) {
+    if (object == null) {
+      style.appendNull(sb);
+    } else {
+
+      if (object instanceof IToStringBuildable) {
+        appendValue((IToStringBuildable)object);
+      } else if (object instanceof Integer) {
+        style.appendValue(sb, ((Integer)object).intValue());
+      } else {
+        style.appendValue(object);
+      }
+    }
   }
 
 }

@@ -25,6 +25,7 @@ public class DefaultToStringStyle {
   public void append(StringBuilder sb, String fieldName, String value) {
     appendFieldName(sb, fieldName);
     appendValue(sb, value);
+    appendFieldDelimiter(sb);
   }
 
   public void append(StringBuilder sb, String value) {
@@ -34,6 +35,7 @@ public class DefaultToStringStyle {
   public void append(StringBuilder sb, String fieldName, String[] value) {
     appendFieldName(sb, fieldName);
     appendValue(sb, value);
+    appendFieldDelimiter(sb);
   }
 
   public void append(StringBuilder sb, String[] value) {
@@ -43,11 +45,13 @@ public class DefaultToStringStyle {
   public void append(StringBuilder sb, String fieldName, int value) {
     appendFieldName(sb, fieldName);
     appendValue(sb, value);
+    appendFieldDelimiter(sb);
   }
 
   public void append(StringBuilder sb, String fieldName, int[] value) {
     appendFieldName(sb, fieldName);
     appendValue(sb, value);
+    appendFieldDelimiter(sb);
   }
 
   public void append(StringBuilder sb, int value) {
@@ -61,11 +65,13 @@ public class DefaultToStringStyle {
   public void append(StringBuilder sb, String fieldName, long value) {
     appendFieldName(sb, fieldName);
     appendValue(sb, value);
+    appendFieldDelimiter(sb);
   }
 
   public void append(StringBuilder sb, String fieldName, long[] value) {
     appendFieldName(sb, fieldName);
     appendValue(sb, value);
+    appendFieldDelimiter(sb);
   }
 
   public void append(StringBuilder sb, long value) {
@@ -79,11 +85,13 @@ public class DefaultToStringStyle {
   public void append(StringBuilder sb, String fieldName, boolean value) {
     appendFieldName(sb, fieldName);
     appendValue(sb, value);
+    appendFieldDelimiter(sb);
   }
 
   public void append(StringBuilder sb, String fieldName, boolean[] value) {
     appendFieldName(sb, fieldName);
     appendValue(sb, value);
+    appendFieldDelimiter(sb);
   }
 
   public void append(StringBuilder sb, boolean value) {
@@ -97,11 +105,13 @@ public class DefaultToStringStyle {
   public void append(StringBuilder sb, String fieldName, float value) {
     appendFieldName(sb, fieldName);
     appendValue(sb, value);
+    appendFieldDelimiter(sb);
   }
 
   public void append(StringBuilder sb, String fieldName, float[] value) {
     appendFieldName(sb, fieldName);
     appendValue(sb, value);
+    appendFieldDelimiter(sb);
   }
 
   public void append(StringBuilder sb, float value) {
@@ -115,11 +125,13 @@ public class DefaultToStringStyle {
   public void append(StringBuilder sb, String fieldName, double value) {
     appendFieldName(sb, fieldName);
     appendValue(sb, value);
+    appendFieldDelimiter(sb);
   }
 
   public void append(StringBuilder sb, String fieldName, double[] value) {
     appendFieldName(sb, fieldName);
     appendValue(sb, value);
+    appendFieldDelimiter(sb);
   }
 
   public void append(StringBuilder sb, double value) {

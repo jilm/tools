@@ -251,7 +251,7 @@ public class DefaultToStringStyle {
   protected void appendFieldName(StringBuilder sb, String fieldName) {
     if (fieldName != null) {
       sb.append(fieldName);
-      appendFieldDelimiter(sb);
+      appendFieldValueDelimiter(sb);
     }
   }
 
@@ -274,16 +274,29 @@ public class DefaultToStringStyle {
     sb.append('[');
   }
 
-  protected void endObject(StringBuilder sb) {
+  protected void endObject(StringBuilder sb, int fieldCount) {
+    if (fieldCount > 0) {
+      removeFieldDelimiter(sb);
+    }
     sb.append(']');
+  }
+
+  protected void removeLastChars(StringBuilder sb, int count) {
+    sb.delete(sb.length() - count, sb.length());
   }
 
   protected void appendFieldValueDelimiter(StringBuilder sb) {
     sb.append('=');
   }
 
+  protected String fieldDelimiter = ",";
+
   protected void appendFieldDelimiter(StringBuilder sb) {
-    sb.append(',');
+    sb.append(fieldDelimiter);
+  }
+
+  protected void removeFieldDelimiter(StringBuilder sb) {
+    removeLastChars(sb, fieldDelimiter.length());
   }
 
   protected void appendNull(StringBuilder sb) {
@@ -296,7 +309,7 @@ public class DefaultToStringStyle {
 
   protected void endArray(StringBuilder sb, int arrayLength) {
     if (arrayLength > arraySize) {
-      sb.append("...");
+      sb.append("... ");
       sb.append("<total size: ");
       sb.append(arrayLength);
       sb.append(">");
@@ -308,7 +321,7 @@ public class DefaultToStringStyle {
   }
 
   protected void removeArrayDelimiter(StringBuilder sb) {
-    sb.delete(sb.length() - arrayDelimiter.length() - 1, sb.length() - 1);
+    removeLastChars(sb, arrayDelimiter.length());
   }
 
   protected String arrayDelimiter = ",";

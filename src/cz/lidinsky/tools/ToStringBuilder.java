@@ -31,9 +31,16 @@ public class ToStringBuilder {
 
   protected StringBuilder sb = new StringBuilder();
 
+  protected int fieldCount = 0;
+
+  protected void appendFieldName(String fieldName) {
+    style.appendFieldName(sb, fieldName);
+    fieldCount++;
+  }
+
   public ToStringBuilder append(String fieldName, IToStringBuildable object) {
     if (fieldName != null) {
-      style.appendFieldName(sb, fieldName);
+      appendFieldName(fieldName);
       appendValue(object);
       style.appendFieldDelimiter(sb);
     }
@@ -42,7 +49,7 @@ public class ToStringBuilder {
 
   public ToStringBuilder append(String fieldName, Object object) {
     if (fieldName != null) {
-      style.appendFieldName(sb, fieldName);
+      appendFieldName(fieldName);
       appendValue(object);
       style.appendFieldDelimiter(sb);
     }
@@ -51,42 +58,47 @@ public class ToStringBuilder {
 
   public ToStringBuilder append(String fieldName, int value) {
     if (fieldName != null) {
-      style.appendFieldName(sb, fieldName);
+      appendFieldName(fieldName);
       style.appendValue(sb, value);
       style.appendFieldDelimiter(sb);
     }
+    return this;
   }
 
   public ToStringBuilder append(String fieldName, long value) {
     if (fieldName != null) {
-      style.appendFieldName(sb, fieldName);
+      appendFieldName(fieldName);
       style.appendValue(sb, value);
       style.appendFieldDelimiter(sb);
     }
+    return this;
   }
 
   public ToStringBuilder append(String fieldName, boolean value) {
     if (fieldName != null) {
-      style.appendFieldName(sb, fieldName);
+      appendFieldName(fieldName);
       style.appendValue(sb, value);
       style.appendFieldDelimiter(sb);
     }
+    return this;
   }
 
   public ToStringBuilder append(String fieldName, float value) {
     if (fieldName != null) {
-      style.appendFieldName(sb, fieldName);
+      appendFieldName(fieldName);
       style.appendValue(sb, value);
       style.appendFieldDelimiter(sb);
     }
+    return this;
   }
 
   public ToStringBuilder append(String fieldName, double value) {
     if (fieldName != null) {
-      style.appendFieldName(sb, fieldName);
+      appendFieldName(fieldName);
       style.appendValue(sb, value);
       style.appendFieldDelimiter(sb);
     }
+    return this;
   }
 
   public ToStringBuilder append(IToStringBuildable object) {
@@ -105,27 +117,32 @@ public class ToStringBuilder {
 
   public ToStringBuilder append(int value) {
     style.appendValue(sb, value);
+    return this;
   }
 
   public ToStringBuilder append(long value) {
     style.appendValue(sb, value);
+    return this;
   }
 
   public ToStringBuilder append(boolean value) {
     style.appendValue(sb, value);
+    return this;
   }
 
   public ToStringBuilder append(float value) {
     style.appendValue(sb, value);
+    return this;
   }
 
   public ToStringBuilder append(double value) {
     style.appendValue(sb, value);
+    return this;
   }
 
   public ToStringBuilder append(String fieldName, IToStringBuildable[] value) {
     if (fieldName != null) {
-      style.appendFieldName(sb, fieldName);
+      appendFieldName(fieldName);
       appendValue(value);
     }
     return this;
@@ -133,9 +150,10 @@ public class ToStringBuilder {
 
   public ToStringBuilder append(String fieldName, Object[] value) {
     if (fieldName != null) {
-      style.appendFieldName(sb, fieldName);
+      appendFieldName(fieldName);
       appendValue(value);
     }
+    return this;
   }
 
   public ToStringBuilder append(String fieldName, int[] value) {
@@ -164,27 +182,27 @@ public class ToStringBuilder {
   }
 
   public ToStringBuilder append(int[] value) {
-    style.append(value);
+    style.append(sb, value);
     return this;
   }
 
   public ToStringBuilder append(long[] value) {
-    style.append(value);
+    style.append(sb, value);
     return this;
   }
 
   public ToStringBuilder append(boolean[] value) {
-    style.append(value);
+    style.append(sb, value);
     return this;
   }
 
   public ToStringBuilder append(float[] value) {
-    style.append(value);
+    style.append(sb, value);
     return this;
   }
 
   public ToStringBuilder append(double[] value) {
-    style.append(value);
+    style.append(sb, value);
     return this;
   }
 
@@ -196,7 +214,7 @@ public class ToStringBuilder {
       style.appendHashCode(sb, object);
       style.startObject(sb);
       object.toString(this);
-      style.endObject(sb);
+      style.endObject(sb, fieldCount);
     }
   }
 
@@ -240,9 +258,14 @@ public class ToStringBuilder {
       } else if (object instanceof Integer) {
         style.appendValue(sb, ((Integer)object).intValue());
       } else {
-        style.appendValue(object);
+        style.appendValue(sb, object);
       }
     }
+  }
+
+  @Override
+  public String toString() {
+    return sb.toString();
   }
 
 }

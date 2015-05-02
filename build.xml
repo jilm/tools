@@ -32,6 +32,7 @@
 	<depend srcdir="${srcdir}" destdir="${bindir}" />
         <javac srcdir="${srcdir}" destdir="${bindir}" 
 	    deprecation="no"
+            classpath="depend/commons-lang3.jar:depend/commons-collections.jar"
 	/>
     </target>
 

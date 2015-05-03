@@ -20,261 +20,281 @@ package cz.lidinsky.tools;
 
 public class DefaultToStringStyle {
 
-  public DefaultToStringStyle() {}
+  protected StringBuilder sb;
 
-  public void append(StringBuilder sb, String fieldName, String value) {
-    appendFieldName(sb, fieldName);
-    appendValue(sb, value);
-    appendFieldDelimiter(sb);
+  public DefaultToStringStyle() {
+    sb = new StringBuilder();
   }
 
-  public void append(StringBuilder sb, String value) {
-    appendValue(sb, value);
+  public DefaultToStringStyle(StringBuilder sb) {
+    this.sb = sb;
   }
 
-  public void append(StringBuilder sb, String fieldName, String[] value) {
-    appendFieldName(sb, fieldName);
-    appendValue(sb, value);
-    appendFieldDelimiter(sb);
+  /*
+   *
+   *     Object Fields
+   *
+   */
+
+  public void append(String fieldName, String value) {
+    appendFieldName(fieldName);
+    appendValue(value);
+    appendFieldDelimiter();
   }
 
-  public void append(StringBuilder sb, String[] value) {
-    appendValue(sb, value);
+  public void append(String value) {
+    appendValue(value);
   }
 
-  public void append(StringBuilder sb, String fieldName, int value) {
-    appendFieldName(sb, fieldName);
-    appendValue(sb, value);
-    appendFieldDelimiter(sb);
+  public void append(String fieldName, String[] value) {
+    appendFieldName(fieldName);
+    appendValue(value);
+    appendFieldDelimiter();
   }
 
-  public void append(StringBuilder sb, String fieldName, int[] value) {
-    appendFieldName(sb, fieldName);
-    appendValue(sb, value);
-    appendFieldDelimiter(sb);
+  public void append(String[] value) {
+    appendValue(value);
   }
 
-  public void append(StringBuilder sb, int value) {
-    appendValue(sb, value);
+  public void append(String fieldName, int value) {
+    appendFieldName(fieldName);
+    appendValue(value);
+    appendFieldDelimiter();
   }
 
-  public void append(StringBuilder sb, int[] value) {
-    appendValue(sb, value);
+  public void append(String fieldName, int[] value) {
+    appendFieldName(fieldName);
+    appendValue(value);
+    appendFieldDelimiter();
   }
 
-  public void append(StringBuilder sb, String fieldName, long value) {
-    appendFieldName(sb, fieldName);
-    appendValue(sb, value);
-    appendFieldDelimiter(sb);
+  public void append(int value) {
+    appendValue(value);
   }
 
-  public void append(StringBuilder sb, String fieldName, long[] value) {
-    appendFieldName(sb, fieldName);
-    appendValue(sb, value);
-    appendFieldDelimiter(sb);
+  public void append(int[] value) {
+    appendValue(value);
   }
 
-  public void append(StringBuilder sb, long value) {
-    appendValue(sb, value);
+  public void append(String fieldName, long value) {
+    appendFieldName(fieldName);
+    appendValue(value);
+    appendFieldDelimiter();
   }
 
-  public void append(StringBuilder sb, long[] value) {
-    appendValue(sb, value);
+  public void append(String fieldName, long[] value) {
+    appendFieldName(fieldName);
+    appendValue(value);
+    appendFieldDelimiter();
   }
 
-  public void append(StringBuilder sb, String fieldName, boolean value) {
-    appendFieldName(sb, fieldName);
-    appendValue(sb, value);
-    appendFieldDelimiter(sb);
+  public void append(long value) {
+    appendValue(value);
   }
 
-  public void append(StringBuilder sb, String fieldName, boolean[] value) {
-    appendFieldName(sb, fieldName);
-    appendValue(sb, value);
-    appendFieldDelimiter(sb);
+  public void append(long[] value) {
+    appendValue(value);
   }
 
-  public void append(StringBuilder sb, boolean value) {
-    appendValue(sb, value);
+  public void append(String fieldName, boolean value) {
+    appendFieldName(fieldName);
+    appendValue(value);
+    appendFieldDelimiter();
   }
 
-  public void append(StringBuilder sb, boolean[] value) {
-    appendValue(sb, value);
+  public void append(String fieldName, boolean[] value) {
+    appendFieldName(fieldName);
+    appendValue(value);
+    appendFieldDelimiter();
   }
 
-  public void append(StringBuilder sb, String fieldName, float value) {
-    appendFieldName(sb, fieldName);
-    appendValue(sb, value);
-    appendFieldDelimiter(sb);
+  public void append(boolean value) {
+    appendValue(value);
   }
 
-  public void append(StringBuilder sb, String fieldName, float[] value) {
-    appendFieldName(sb, fieldName);
-    appendValue(sb, value);
-    appendFieldDelimiter(sb);
+  public void append(boolean[] value) {
+    appendValue(value);
   }
 
-  public void append(StringBuilder sb, float value) {
-    appendValue(sb, value);
+  public void append(String fieldName, float value) {
+    appendFieldName(fieldName);
+    appendValue(value);
+    appendFieldDelimiter();
   }
 
-  public void append(StringBuilder sb, float[] value) {
-    appendValue(sb, value);
+  public void append(String fieldName, float[] value) {
+    appendFieldName(fieldName);
+    appendValue(value);
+    appendFieldDelimiter();
   }
 
-  public void append(StringBuilder sb, String fieldName, double value) {
-    appendFieldName(sb, fieldName);
-    appendValue(sb, value);
-    appendFieldDelimiter(sb);
+  public void append(float value) {
+    appendValue(value);
   }
 
-  public void append(StringBuilder sb, String fieldName, double[] value) {
-    appendFieldName(sb, fieldName);
-    appendValue(sb, value);
-    appendFieldDelimiter(sb);
+  public void append(float[] value) {
+    appendValue(value);
   }
 
-  public void append(StringBuilder sb, double value) {
-    appendValue(sb, value);
+  public void append(String fieldName, double value) {
+    appendFieldName(fieldName);
+    appendValue(value);
+    appendFieldDelimiter();
   }
 
-  public void append(StringBuilder sb, double[] value) {
-    appendValue(sb, value);
+  public void append(String fieldName, double[] value) {
+    appendFieldName(fieldName);
+    appendValue(value);
+    appendFieldDelimiter();
   }
 
-  //-------------------------
+  public void append(double value) {
+    appendValue(value);
+  }
 
-  protected void appendValue(StringBuilder sb, String value) {
+  public void append(double[] value) {
+    appendValue(value);
+  }
+
+  /*
+   *
+   *     Values
+   *
+   */
+
+  protected void appendValue(String value) {
     if (value == null) {
-      appendNull(sb);
+      appendNull();
     } else {
       sb.append(value);
     }
   }
 
-  protected void appendValue(StringBuilder sb, int value) {
+  protected void appendValue(int value) {
     sb.append(value);
   }
 
-  protected void appendValue(StringBuilder sb, long value) {
+  protected void appendValue(long value) {
     sb.append(value);
   }
 
-  protected void appendValue(StringBuilder sb, boolean value) {
+  protected void appendValue(boolean value) {
     sb.append(value);
   }
 
-  protected void appendValue(StringBuilder sb, float value) {
+  protected void appendValue(float value) {
     sb.append(value);
   }
 
-  protected void appendValue(StringBuilder sb, double value) {
+  protected void appendValue(double value) {
     sb.append(value);
   }
 
-  protected void appendValue(StringBuilder sb, Object value) {
+  protected void appendValue(Object value) {
     if (value == null) {
-      appendNull(sb);
+      appendNull();
     } else {
       sb.append(value);
     }
   }
 
-  protected void appendValue(StringBuilder sb, String[] value) {
+  protected void appendValue(String[] value) {
     if (value == null) {
-      appendNull(sb);
+      appendNull();
     } else {
-      startArray(sb);
+      startArray();
       for (int i = 0; i < getArraySize(value.length); i++) {
-        appendValue(sb, value[i]);
-        appendArrayDelimiter(sb);
+        appendValue(value[i]);
+        appendArrayDelimiter();
       }
-      endArray(sb, value.length);
+      endArray();
     }
   }
 
-  protected void appendValue(StringBuilder sb, int[] value) {
+  protected void appendValue(int[] value) {
     if (value == null) {
-      appendNull(sb);
+      appendNull();
     } else {
-      startArray(sb);
+      startArray();
       for (int i = 0; i < getArraySize(value.length); i++) {
-        appendValue(sb, value[i]);
-        appendArrayDelimiter(sb);
+        appendValue(value[i]);
+        appendArrayDelimiter();
       }
-      endArray(sb, value.length);
+      endArray();
     }
   }
 
-  protected void appendValue(StringBuilder sb, long[] value) {
+  protected void appendValue(long[] value) {
     if (value == null) {
-      appendNull(sb);
+      appendNull();
     } else {
-      startArray(sb);
+      startArray();
       for (int i = 0; i < getArraySize(value.length); i++) {
-        appendValue(sb, value[i]);
-        appendArrayDelimiter(sb);
+        appendValue(value[i]);
+        appendArrayDelimiter();
       }
-      endArray(sb, value.length);
+      endArray();
     }
   }
 
-  protected void appendValue(StringBuilder sb, boolean[] value) {
+  protected void appendValue(boolean[] value) {
     if (value == null) {
-      appendNull(sb);
+      appendNull();
     } else {
-      startArray(sb);
+      startArray();
       for (int i = 0; i < getArraySize(value.length); i++) {
-        appendValue(sb, value[i]);
-        appendArrayDelimiter(sb);
+        appendValue(value[i]);
+        appendArrayDelimiter();
       }
-      endArray(sb, value.length);
+      endArray();
     }
   }
 
-  protected void appendValue(StringBuilder sb, float[] value) {
+  protected void appendValue(float[] value) {
     if (value == null) {
-      appendNull(sb);
+      appendNull();
     } else {
-      startArray(sb);
+      startArray();
       for (int i = 0; i < getArraySize(value.length); i++) {
-        appendValue(sb, value[i]);
-        appendArrayDelimiter(sb);
+        appendValue(value[i]);
+        appendArrayDelimiter();
       }
-      endArray(sb, value.length);
+      endArray();
     }
   }
 
-  protected void appendValue(StringBuilder sb, double[] value) {
+  protected void appendValue(double[] value) {
     if (value == null) {
-      appendNull(sb);
+      appendNull();
     } else {
-      startArray(sb);
+      startArray();
       for (int i = 0; i < getArraySize(value.length); i++) {
-        appendValue(sb, value[i]);
-        appendArrayDelimiter(sb);
+        appendValue(value[i]);
+        appendArrayDelimiter();
       }
-      endArray(sb, value.length);
+      endArray();
     }
   }
 
   //-------------------------
 
-  protected void appendFieldName(StringBuilder sb, String fieldName) {
+  protected int fieldCount = 0;
+
+  protected void appendFieldName(String fieldName) {
     if (fieldName != null) {
       sb.append(fieldName);
-      appendFieldValueDelimiter(sb);
+      appendFieldValueDelimiter();
     }
   }
 
-  protected void appendHashCode(StringBuilder sb, Object object) {
+  protected void appendHashCode(Object object) {
     sb.append('@');
     sb.append(Integer.toHexString(object.hashCode()));
   }
 
   protected boolean simpleClassName = true;
 
-  protected void appendClassName(StringBuilder sb, Class _class) {
+  protected void appendClassName(Class _class) {
     if (simpleClassName) {
       sb.append(_class.getSimpleName());
     } else {
@@ -282,64 +302,69 @@ public class DefaultToStringStyle {
     }
   }
 
-  protected void startObject(StringBuilder sb) {
+  protected void startObject() {
     sb.append('[');
+    fieldCount = 0;
   }
 
-  protected void endObject(StringBuilder sb, int fieldCount) {
+  protected void endObject() {
     if (fieldCount > 0) {
-      removeFieldDelimiter(sb);
+      removeFieldDelimiter();
     }
     sb.append(']');
   }
 
-  protected void removeLastChars(StringBuilder sb, int count) {
+  protected void removeLastChars(int count) {
     sb.delete(sb.length() - count, sb.length());
   }
 
-  protected void appendFieldValueDelimiter(StringBuilder sb) {
+  protected void appendFieldValueDelimiter() {
     sb.append('=');
+    fieldCount++;
   }
 
   protected String fieldDelimiter = ",";
 
-  protected void appendFieldDelimiter(StringBuilder sb) {
+  protected void appendFieldDelimiter() {
     sb.append(fieldDelimiter);
   }
 
-  protected void removeFieldDelimiter(StringBuilder sb) {
-    removeLastChars(sb, fieldDelimiter.length());
+  protected void removeFieldDelimiter() {
+    removeLastChars(fieldDelimiter.length());
   }
 
-  protected void appendNull(StringBuilder sb) {
+  protected void appendNull() {
     sb.append("<null>");
   }
 
-  protected void startArray(StringBuilder sb) {
+  protected void startArray() {
     sb.append('{');
   }
 
-  protected void endArray(StringBuilder sb, int arrayLength) {
-    if (arrayLength > arraySize) {
+  protected void endArray() {
+    if (arrayElementCount > arraySize) {
       sb.append("... ");
       sb.append("<total size: ");
-      sb.append(arrayLength);
+      sb.append(arrayElementCount);
       sb.append(">");
       sb.append('}');
     } else {
-      removeArrayDelimiter(sb);
+      removeArrayDelimiter();
       sb.append('}');
     }
   }
 
-  protected void removeArrayDelimiter(StringBuilder sb) {
-    removeLastChars(sb, arrayDelimiter.length());
+  protected void removeArrayDelimiter() {
+    removeLastChars(arrayDelimiter.length());
   }
 
   protected String arrayDelimiter = ",";
 
-  protected void appendArrayDelimiter(StringBuilder sb) {
+  protected int arrayElementCount = 0;
+
+  protected void appendArrayDelimiter() {
     sb.append(arrayDelimiter);
+    arrayElementCount++;
   }
 
   protected static int arraySize = 10;

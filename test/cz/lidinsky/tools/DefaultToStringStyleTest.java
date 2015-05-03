@@ -93,7 +93,7 @@ public class DefaultToStringStyleTest implements IToStringBuildable {
 
   @Override
   public String toString() {
-    return new ToStringBuilder(new DefaultToStringStyle())
+    return new ToStringBuilder()
         .append(this)
         .toString();
   }

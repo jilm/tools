@@ -20,83 +20,80 @@ package cz.lidinsky.tools;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.ArrayDeque;
 
 public class ToStringBuilder {
 
   private DefaultToStringStyle style;
 
-  public ToStringBuilder(DefaultToStringStyle style) {
-    this.style = style;
+  protected ArrayDeque<DefaultToStringStyle> styleStack
+      = new ArrayDeque<DefaultToStringStyle>();
+
+  public ToStringBuilder() {
+    this.style = new DefaultToStringStyle(sb);
   }
 
   protected StringBuilder sb = new StringBuilder();
 
-  protected int fieldCount = 0;
-
-  protected void appendFieldName(String fieldName) {
-    style.appendFieldName(sb, fieldName);
-    fieldCount++;
-  }
-
   public ToStringBuilder append(String fieldName, IToStringBuildable object) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
+      style.appendFieldName(fieldName);
       appendValue(object);
-      style.appendFieldDelimiter(sb);
+      style.appendFieldDelimiter();
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, Object object) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
+      style.appendFieldName(fieldName);
       appendValue(object);
-      style.appendFieldDelimiter(sb);
+      style.appendFieldDelimiter();
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, int value) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
-      style.appendValue(sb, value);
-      style.appendFieldDelimiter(sb);
+      style.appendFieldName(fieldName);
+      style.appendValue(value);
+      style.appendFieldDelimiter();
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, long value) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
-      style.appendValue(sb, value);
-      style.appendFieldDelimiter(sb);
+      style.appendFieldName(fieldName);
+      style.appendValue(value);
+      style.appendFieldDelimiter();
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, boolean value) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
-      style.appendValue(sb, value);
-      style.appendFieldDelimiter(sb);
+      style.appendFieldName(fieldName);
+      style.appendValue(value);
+      style.appendFieldDelimiter();
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, float value) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
-      style.appendValue(sb, value);
-      style.appendFieldDelimiter(sb);
+      style.appendFieldName(fieldName);
+      style.appendValue(value);
+      style.appendFieldDelimiter();
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, double value) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
-      style.appendValue(sb, value);
-      style.appendFieldDelimiter(sb);
+      style.appendFieldName(fieldName);
+      style.appendValue(value);
+      style.appendFieldDelimiter();
     }
     return this;
   }
@@ -116,33 +113,33 @@ public class ToStringBuilder {
   }
 
   public ToStringBuilder append(int value) {
-    style.appendValue(sb, value);
+    style.appendValue(value);
     return this;
   }
 
   public ToStringBuilder append(long value) {
-    style.appendValue(sb, value);
+    style.appendValue(value);
     return this;
   }
 
   public ToStringBuilder append(boolean value) {
-    style.appendValue(sb, value);
+    style.appendValue(value);
     return this;
   }
 
   public ToStringBuilder append(float value) {
-    style.appendValue(sb, value);
+    style.appendValue(value);
     return this;
   }
 
   public ToStringBuilder append(double value) {
-    style.appendValue(sb, value);
+    style.appendValue(value);
     return this;
   }
 
   public ToStringBuilder append(String fieldName, IToStringBuildable[] value) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
+      style.appendFieldName(fieldName);
       appendValue(value);
     }
     return this;
@@ -150,115 +147,115 @@ public class ToStringBuilder {
 
   public ToStringBuilder append(String fieldName, Object[] value) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
+      style.appendFieldName(fieldName);
       appendValue(value);
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, int[] value) {
-    style.append(sb, fieldName, value);
+    style.append(fieldName, value);
     return this;
   }
 
   public ToStringBuilder append(String fieldName, long[] value) {
-    style.append(sb, fieldName, value);
+    style.append(fieldName, value);
     return this;
   }
 
   public ToStringBuilder append(String fieldName, boolean[] value) {
-    style.append(sb, fieldName, value);
+    style.append(fieldName, value);
     return this;
   }
 
   public ToStringBuilder append(String fieldName, float[] value) {
-    style.append(sb, fieldName, value);
+    style.append(fieldName, value);
     return this;
   }
 
   public ToStringBuilder append(String fieldName, double[] value) {
-    style.append(sb, fieldName, value);
+    style.append(fieldName, value);
     return this;
   }
 
   public ToStringBuilder append(int[] value) {
-    style.append(sb, value);
+    style.append(value);
     return this;
   }
 
   public ToStringBuilder append(long[] value) {
-    style.append(sb, value);
+    style.append(value);
     return this;
   }
 
   public ToStringBuilder append(boolean[] value) {
-    style.append(sb, value);
+    style.append(value);
     return this;
   }
 
   public ToStringBuilder append(float[] value) {
-    style.append(sb, value);
+    style.append(value);
     return this;
   }
 
   public ToStringBuilder append(double[] value) {
-    style.append(sb, value);
+    style.append(value);
     return this;
   }
 
   protected void appendValue(IToStringBuildable object) {
     if (object == null) {
-      style.appendNull(sb);
+      style.appendNull();
     } else {
-      style.appendClassName(sb, object.getClass());
-      style.appendHashCode(sb, object);
-      style.startObject(sb);
+      style.appendClassName(object.getClass());
+      style.appendHashCode(object);
+      style.startObject();
       object.toString(this);
-      style.endObject(sb, fieldCount);
+      style.endObject();
     }
   }
 
   protected void appendValue(IToStringBuildable[] value) {
     if (value == null) {
-      style.appendNull(sb);
+      style.appendNull();
     } else {
-      style.appendClassName(sb, value.getClass());
-      style.appendHashCode(sb, value);
-      style.startArray(sb);
+      style.appendClassName(value.getClass());
+      style.appendHashCode(value);
+      style.startArray();
       for (int i = 0; i < style.getArraySize(value.length); i++) {
         appendValue(value[i]);
-        style.appendArrayDelimiter(sb);
+        style.appendArrayDelimiter();
       }
-      style.endArray(sb, value.length);
+      style.endArray();
     }
   }
 
   protected void appendValue(Object[] value) {
     if (value == null) {
-      style.appendNull(sb);
+      style.appendNull();
     } else {
-      style.appendClassName(sb, value.getClass());
-      style.appendHashCode(sb, value);
-      style.startArray(sb);
+      style.appendClassName(value.getClass());
+      style.appendHashCode(value);
+      style.startArray();
       for (int i = 0; i < style.getArraySize(value.length); i++) {
         appendValue(value[i]);
-        style.appendArrayDelimiter(sb);
+        style.appendArrayDelimiter();
       }
-      style.endArray(sb, value.length);
+      style.endArray();
     }
   }
 
   protected void appendValue(Object object) {
     if (object == null) {
-      style.appendNull(sb);
+      style.appendNull();
     } else {
 
       if (object instanceof IToStringBuildable) {
         appendValue((IToStringBuildable)object);
       } else if (object instanceof Integer) {
-        style.appendValue(sb, ((Integer)object).intValue());
+        style.appendValue(((Integer)object).intValue());
       } else {
-        style.appendValue(sb, object);
+        style.appendValue(object);
       }
     }
   }

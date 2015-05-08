@@ -27,7 +27,11 @@ import static org.apache.commons.collections4.ComparatorUtils.transformedCompara
 import static org.apache.commons.collections4.PredicateUtils.identityPredicate;
 import static java.util.Collections.sort;
 
+import static cz.lidinsky.tools.ExceptionUtils.wrapException;
+
 import cz.lidinsky.tools.functors.TransformedPredicate;
+import cz.lidinsky.tools.IToStringBuildable;
+import cz.lidinsky.tools.ToStringBuilder;
 
 import java.io.InputStream;
 import java.io.IOException;
@@ -74,7 +78,7 @@ import org.apache.commons.collections4.iterators.FilterIterator;
  *  is return back to the parent handler.
  *
  */
-public class XMLReader extends DefaultHandler
+public class XMLReader extends DefaultHandler implements IToStringBuildable
 {
 
   /** Number of events that are recognized. */
@@ -274,24 +278,20 @@ public class XMLReader extends DefaultHandler
     return select(handlers.get(event), filter);
   }
 
-  protected void callHandlerMethod(int event, Attributes attributes) {
+  protected void callHandlerMethod(int event, Attributes attributes) 
+      throws IllegalAccessException, IllegalArgumentException,
+             InvocationTargetException {
 
-    try {
-      Collection<Triple<Expression, Method, IXMLHandler>> handlers
-	          = findHandlerMethods(event);
-      for (Triple<Expression, Method, IXMLHandler> handler : handlers) {
-        boolean result
-	    = (attributes != null)
-	    ? (Boolean)handler.getMiddle().invoke(handler.getRight(), attributes)
-	    : (Boolean)handler.getMiddle().invoke(handler.getRight());
-	if (result) {
-	  break;
-	}
+    Collection<Triple<Expression, Method, IXMLHandler>> handlers
+          = findHandlerMethods(event);
+    for (Triple<Expression, Method, IXMLHandler> handler : handlers) {
+      boolean result
+          = (attributes != null)
+          ? (Boolean)handler.getMiddle().invoke(handler.getRight(), attributes)
+          : (Boolean)handler.getMiddle().invoke(handler.getRight());
+      if (result) {
+        break;
       }
-    } catch (NoSuchElementException e) {
-    } catch (IllegalAccessException e) {
-    } catch (IllegalArgumentException e) {
-    } catch (InvocationTargetException e) {
     }
   }
 
@@ -313,7 +313,11 @@ public class XMLReader extends DefaultHandler
     elementStack.add(new ImmutablePair<String, String>(uri, localName));
 
     // Find and call appropriate handler method
-    callHandlerMethod(START_ELEMENT_EVENT, attributes);
+    try {
+      callHandlerMethod(START_ELEMENT_EVENT, attributes);
+    } catch (Exception e) {
+      wrapException(e, new SAXException(e));
+    }
   }
 
   /**
@@ -327,7 +331,11 @@ public class XMLReader extends DefaultHandler
     // Store location
 
     // Find and call appropriate handler method
-    callHandlerMethod(END_ELEMENT_EVENT, null);
+    try {
+      callHandlerMethod(END_ELEMENT_EVENT, null);
+    } catch (Exception e) {
+      wrapException(e, new SAXException(e));
+    }
 
     // Remove the element name and uri from the element stack
     elementStack.remove(elementStack.size() - 1);
@@ -418,6 +426,18 @@ public class XMLReader extends DefaultHandler
         "", uri, name, line, column,
         locator.getPublicId(), locator.getSystemId()));
     // TODO:
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder()
+      .append(this)
+      .toString();
+  }
+
+  public void toString(ToStringBuilder builder) {
+    builder.append("handlers", handlers)
+      .append("elementStack", elementStack);
   }
 
   public static void main(String[] args) throws Exception {

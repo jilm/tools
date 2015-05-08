@@ -27,6 +27,10 @@ public class ExpressionTest extends Expression
     context1.add(new ImmutablePair<String, String>(ns1, "element1"));
     context1.add(new ImmutablePair<String, String>(ns1, "element2"));
     context1.add(new ImmutablePair<String, String>(ns1, "element3"));
+
+    context2 = new ArrayList<Pair<String, String>>();
+    context2.add(ROOT);
+    context2.add(new ImmutablePair<String, String>(ns1, "application"));
   }
 
   @Test
@@ -136,6 +140,18 @@ public class ExpressionTest extends Expression
     ex.parse(expression, "");
     assertTrue(ex.evaluate(context1));
   }
+
+  // Root element test
+  @Test
+  public void test13()
+  {
+    String expression
+          = "/{http://control4j.lidinsky.cz/application}application";
+    Expression ex = new Expression();
+    ex.parse(expression, "");
+    assertTrue(ex.evaluate(context2));
+  }
+
 
 }
 

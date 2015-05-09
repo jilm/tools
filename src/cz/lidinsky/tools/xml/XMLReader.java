@@ -83,9 +83,10 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
 
   /** Number of events that are recognized. */
   protected static final int EVENTS = 2;
-
   protected static final int START_ELEMENT_EVENT = 0;
   protected static final int END_ELEMENT_EVENT = 1;
+  protected static final String[] EVENT_LABELS
+      = {"Start element", "End element"};
 
   protected ArrayList<IXMLHandler> handlerObjects
 			      = new ArrayList<IXMLHandler>();
@@ -105,7 +106,8 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
   public XMLReader() {
 
     // Initialize the array of handlers
-    handlers = new ArrayList<ArrayList<Triple<Expression, Method, IXMLHandler>>>();
+    handlers
+        = new ArrayList<ArrayList<Triple<Expression, Method, IXMLHandler>>>();
     for (int i=0; i<EVENTS; i++) {
       handlers.add(new ArrayList<Triple<Expression, Method, IXMLHandler>>());
     }
@@ -123,8 +125,42 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
   /** Locator of the document */
   private Locator locator;
 
-  private int line;
-  private int column;
+  private int line1 = 1;
+  private int column1 = 1;
+  private int line2 = 1;
+  private int column2 = 1;
+
+  protected void storeLocation() {
+    line1 = line2;
+    column1 = column2;
+    line2 = locator.getLineNumber();
+    column2 = locator.getColumnNumber();
+  }
+
+  public String getLocation() {
+    StringBuilder sb = new StringBuilder();
+    if (line1 == line2) {
+      sb.append("On line: ")
+        .append(line1)
+        .append("; ");
+      if (column1 == column2) {
+        sb.append("on column: ")
+          .append(column1);
+      } else {
+        sb.append("somewhere between columns: ")
+          .append(column1)
+          .append(" and ")
+          .append(column2);
+      }
+    } else {
+      sb.append("Somewhere between lines: ")
+        .append(line1)
+        .append(" and ")
+        .append(line2);
+    }
+    sb.append('.');
+    return sb.toString();
+  }
 
   /**
    *  Adds a handler object. Methods of this object are used to
@@ -282,17 +318,17 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
       throws IllegalAccessException, IllegalArgumentException,
              InvocationTargetException {
 
+    boolean processed = false; // indicate that the event was processed
     Collection<Triple<Expression, Method, IXMLHandler>> handlers
           = findHandlerMethods(event);
     for (Triple<Expression, Method, IXMLHandler> handler : handlers) {
-      boolean result
+      processed
           = (attributes != null)
           ? (Boolean)handler.getMiddle().invoke(handler.getRight(), attributes)
           : (Boolean)handler.getMiddle().invoke(handler.getRight());
-      if (result) {
-        break;
-      }
+      if (processed) return;
     }
+    reportMissingHandler(EVENT_LABELS[event]);
   }
 
   /*
@@ -308,6 +344,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
       throws SAXException
   {
     // Store location
+    storeLocation();
 
     // Store the element name and uri into the element stack
     elementStack.add(new ImmutablePair<String, String>(uri, localName));
@@ -329,6 +366,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
   throws SAXException
   {
     // Store location
+    storeLocation();
 
     // Find and call appropriate handler method
     try {
@@ -354,8 +392,6 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
         }
       }
     );
-    line = locator.getLineNumber();
-    column = locator.getColumnNumber();
   }
 
   /**
@@ -365,8 +401,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
   public final void endDocument()
   {
     //handlerStack.handler.endProcessing();
-    line = locator.getLineNumber();
-    column = locator.getColumnNumber();
+    storeLocation();
   }
 
   /**
@@ -388,8 +423,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
   public final void characters(char[] ch, int start, int length)
   {
     characterBuffer.append(ch, start, length);
-    line = locator.getLineNumber();
-    column = locator.getColumnNumber();
+    storeLocation();
   }
 
   /**
@@ -398,8 +432,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
   @Override
   public final void ignorableWhitespace(char[] ch, int start, int length)
   {
-    line = locator.getLineNumber();
-    column = locator.getColumnNumber();
+    storeLocation();
   }
 
   /**
@@ -421,10 +454,8 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
     System.err.println(java.text.MessageFormat.format(
         "Didn''t find any handler for the event: {0}.\n" +
         "Last start element: '{'{1}'}':{2},\n" +
-        "on line: {3,number,integer}; column: {4,number,integer}; " +
-        "public id: {5}; system id: {6}",
-        "", uri, name, line, column,
-        locator.getPublicId(), locator.getSystemId()));
+        getLocation(),
+        event, uri, name));
     // TODO:
   }
 

@@ -33,6 +33,10 @@ public class ToStringBuilder {
     this.style = new DefaultToStringStyle(sb);
   }
 
+  public ToStringBuilder(ToStringStyle style) {
+    this();
+  }
+
   protected StringBuilder sb = new StringBuilder();
 
   public ToStringBuilder append(String fieldName, IToStringBuildable object) {

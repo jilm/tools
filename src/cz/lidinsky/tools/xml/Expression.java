@@ -18,14 +18,17 @@ package cz.lidinsky.tools.xml;
  *  along with java tools library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.commons.lang3.text.StrMatcher.charMatcher;
 import static org.apache.commons.lang3.text.StrMatcher.charSetMatcher;
 import static org.apache.commons.lang3.text.StrMatcher.singleQuoteMatcher;
 import static org.apache.commons.collections4.IteratorUtils.asIterable;
+import static org.apache.commons.collections4.IteratorUtils.transformedIterator;
 
 import org.apache.commons.lang3.text.StrTokenizer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.collections4.Transformer;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -36,6 +39,7 @@ public class Expression implements Comparator<Expression> {
   public static final Pair<String, String> ROOT
       = new ImmutablePair<String, String>("", "");
 
+  /** The pair contains uri and local name of the element */
   protected ArrayList<Pair<String, String>> path
       = new ArrayList<Pair<String, String>>();
 
@@ -74,7 +78,6 @@ public class Expression implements Comparator<Expression> {
       localName = expression;
     }
     return new ImmutablePair<String, String>(uri, localName);
-
   }
 
   public boolean evaluate(List<Pair<String, String>> context) {
@@ -163,6 +166,34 @@ public class Expression implements Comparator<Expression> {
 
   private int getRank(Pair<String, String> element) {
     return element == null || element.getRight().equals("*") ? 0 : 1;
+  }
+
+  @Override
+  public String toString() {
+    return join(
+        transformedIterator(
+            path.iterator(), 
+            new Transformer<Pair<String, String>, String>() {
+              public String transform(Pair<String, String> pathElement) {
+                return pathElementToString(pathElement);
+              }
+            }
+        ), '/');
+  }
+
+  protected String pathElementToString(Pair<String, String> element) {
+    if (element == null) {
+      return "";
+    } else if (element == ROOT) {
+      return "";
+    } else {
+      return new StringBuilder()
+        .append('{')
+        .append(element.getLeft())
+        .append('}')
+        .append(element.getRight())
+        .toString();
+    }
   }
 
 }

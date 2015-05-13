@@ -207,6 +207,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
       );
 
     }
+
   }
 
   public void removeHandler(IXMLHandler handler) {

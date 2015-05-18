@@ -20,6 +20,7 @@ package cz.lidinsky.tools.xml;
 
 import static org.apache.commons.lang3.Validate.notNull;
 import static org.apache.commons.lang3.reflect.MethodUtils.getMethodsWithAnnotation;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.collections4.CollectionUtils.forAllDo;
 import static org.apache.commons.collections4.CollectionUtils.filter;
 import static org.apache.commons.collections4.CollectionUtils.select;
@@ -33,6 +34,7 @@ import cz.lidinsky.tools.functors.TransformedPredicate;
 import cz.lidinsky.tools.IToStringBuildable;
 import cz.lidinsky.tools.ToStringBuilder;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -49,6 +51,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -68,37 +71,41 @@ import org.apache.commons.collections4.iterators.FilterIterator;
  *  annotations to choose appropriate receiver method for a
  *  given event.
  *
- *  <p>The input XML document may contain parts that belongs
- *  to defferent grammers. To handle such a document, this
- *  class contains a stack for a handler classes. If the handler
- *  reach an element which is the root element of the foreign
- *  subtree, it must simply create an appropriate handler and
- *  the events will be dispatched into that handler as long as
- *  the end element of the subtree is reached. Than the control
- *  is return back to the parent handler.
- *
  */
-public class XMLReader extends DefaultHandler implements IToStringBuildable
-{
+public class XMLReader extends DefaultHandler implements IToStringBuildable {
 
   /** Number of events that are recognized. */
-  protected static final int EVENTS = 2;
+  protected static final int EVENTS = 3;
+
+  /** A code for the start element event. */
   protected static final int START_ELEMENT_EVENT = 0;
+
+  /** A code for the end element event. */
   protected static final int END_ELEMENT_EVENT = 1;
+
+  /** A code for the text content of the element event. */
+  protected static final int TEXT_EVENT = 2;
+
+  /** Annotation classes that are used to annotate particular handler
+      methods. */
+  private ArrayList<Class<? extends Annotation>> annotationClasses;
+
+  /** Labels for events, serves mainly for error reports. */
   protected static final String[] EVENT_LABELS
-      = {"Start element", "End element"};
+                         = {"Start element", "End element", "Text content"};
 
+  /** Handler objects. */
   protected ArrayList<IXMLHandler> handlerObjects
-			      = new ArrayList<IXMLHandler>();
+			                     = new ArrayList<IXMLHandler>();
 
-  protected ArrayList<ArrayList<Triple<Expression, Method, IXMLHandler>>> handlers;
+  /** Handler methods for events. */
+  protected ArrayList<ArrayList<Triple<Expression, Method, IXMLHandler>>>
+								   handlers;
 
   /** Contains current element path. Each entry contains uri and element
       local name. */
   protected ArrayList<Pair<String, String>> elementStack
-		      = new ArrayList<Pair<String, String>>();
-
-  private ArrayList<Class<? extends Annotation>> annotationClasses;
+		                    = new ArrayList<Pair<String, String>>();
 
   /**
    *  Initialize the internal data structures.
@@ -107,7 +114,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
 
     // Initialize the array of handlers
     handlers
-        = new ArrayList<ArrayList<Triple<Expression, Method, IXMLHandler>>>();
+       = new ArrayList<ArrayList<Triple<Expression, Method, IXMLHandler>>>();
     for (int i=0; i<EVENTS; i++) {
       handlers.add(new ArrayList<Triple<Expression, Method, IXMLHandler>>());
     }
@@ -119,24 +126,41 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
     annotationClasses = new ArrayList<Class<? extends Annotation>>(EVENTS);
     annotationClasses.add(AXMLStartElement.class);
     annotationClasses.add(AXMLEndElement.class);
+    annotationClasses.add(AXMLText.class);
   }
 
+  /*
+   *
+   *    Locator methods.
+   *
+   */
 
   /** Locator of the document */
   private Locator locator;
 
+  /** Actual location. */
   private int line1 = 1;
   private int column1 = 1;
   private int line2 = 1;
   private int column2 = 1;
+  private String publicId;
+  private String systemId;
 
+  /**
+   *  Store actual document location.
+   */
   protected void storeLocation() {
     line1 = line2;
     column1 = column2;
     line2 = locator.getLineNumber();
     column2 = locator.getColumnNumber();
+    publicId = locator.getPublicId();
+    systemId = locator.getSystemId();
   }
 
+  /**
+   *  Returns current document location in the human readable form.
+   */
   public String getLocation() {
     StringBuilder sb = new StringBuilder();
     if (line1 == line2) {
@@ -159,18 +183,26 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
         .append(line2);
     }
     sb.append('.');
+    if (publicId != null) {
+      sb.append("Public id: ")
+	.append(publicId)
+	.append(".");
+    }
+    if (systemId != null) {
+      sb.append("System id: ")
+	.append(systemId)
+	.append(".");
+    }
     return sb.toString();
   }
 
   /**
-   *  Adds a handler object. Methods of this object are used to
+   *  Adds the handler object. Methods of this object are used to
    *  respond to the xml start element and xml end element events.
-   *  Such methods must be annotated by XmlStartElement and 
-   *  XmlEndElement annotations. A handler must be added before
-   *  the load method is called.
+   *  Such methods must be annotated by AXMLStartElement and 
+   *  AXMLEndElement annotations.
    */
-  public void addHandler(IXMLHandler handler)
-  {
+  public void addHandler(IXMLHandler handler) {
 
     handlerObjects.add(notNull(handler));
 
@@ -260,8 +292,11 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
       return ((AXMLEndElement)annotation).value();
     } else if (annotation instanceof AXMLDefaultUri) {
       return ((AXMLDefaultUri)annotation).value();
+    } else if (annotation instanceof AXMLText) {
+      return ((AXMLText)annotation).value();
     } else {
-      throw new ClassCastException(); // TODO:
+      // Should not happen
+      throw new AssertionError();
     }
   }
 
@@ -295,6 +330,20 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
     }
   }
 
+  public void load(File file) throws IOException {
+    try {
+      SAXParserFactory factory = SAXParserFactory.newInstance();
+      factory.setNamespaceAware(true);
+      factory.setXIncludeAware(true);
+      SAXParser parser = factory.newSAXParser();
+      parser.parse(file, this);
+    } catch (SAXException e) {
+      throw new IOException(e);
+    } catch (ParserConfigurationException e) {
+      throw new IOException(e);
+    }
+  }
+
   protected Collection<Triple<Expression, Method, IXMLHandler>>
       findHandlerMethods(int event) {
 
@@ -323,10 +372,20 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
     Collection<Triple<Expression, Method, IXMLHandler>> handlers
           = findHandlerMethods(event);
     for (Triple<Expression, Method, IXMLHandler> handler : handlers) {
-      processed
-          = (attributes != null)
-          ? (Boolean)handler.getMiddle().invoke(handler.getRight(), attributes)
-          : (Boolean)handler.getMiddle().invoke(handler.getRight());
+      switch (event) {
+	case START_ELEMENT_EVENT:
+	  processed = (Boolean)handler.getMiddle()
+	      .invoke(handler.getRight(), attributes);
+	  break;
+	case END_ELEMENT_EVENT:
+	  processed = (Boolean)handler.getMiddle()
+	      .invoke(handler.getRight());
+	  break;
+	case TEXT_EVENT:
+	  processed = (Boolean)handler.getMiddle()
+	      .invoke(handler.getRight(), characterBuffer.toString());
+	  break;
+      }
       if (processed) return;
     }
     reportMissingHandler(EVENT_LABELS[event]);
@@ -342,10 +401,13 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
   @Override
   public final void startElement(
       String uri, String localName, String qName, Attributes attributes)
-      throws SAXException
-  {
+      throws SAXException {
+
     // Store location
     storeLocation();
+
+    // If there is a content in the text buffer
+    fireTextEvent();
 
     // Store the element name and uri into the element stack
     elementStack.add(new ImmutablePair<String, String>(uri, localName));
@@ -354,7 +416,8 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
     try {
       callHandlerMethod(START_ELEMENT_EVENT, attributes);
     } catch (Exception e) {
-      wrapException(e, new SAXException(e));
+      reportException(e);
+      throw new SAXException(e);
     }
   }
 
@@ -364,16 +427,20 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
    */
   @Override
   public final void endElement(String uri, String localName, String qName)
-  throws SAXException
-  {
+  throws SAXException {
+
     // Store location
     storeLocation();
+
+    // If there is a content in the text buffer
+    fireTextEvent();
 
     // Find and call appropriate handler method
     try {
       callHandlerMethod(END_ELEMENT_EVENT, null);
     } catch (Exception e) {
-      wrapException(e, new SAXException(e));
+      reportException(e);
+      throw new SAXException(e);
     }
 
     // Remove the element name and uri from the element stack
@@ -384,8 +451,8 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
    *
    */
   @Override
-  public final void startDocument()
-  {
+  public final void startDocument() {
+    storeLocation();
     forAllDo(handlerObjects,
       new Closure<IXMLHandler>() {
         public void execute(IXMLHandler handler) {
@@ -399,8 +466,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
    *  Does nothing.
    */
   @Override
-  public final void endDocument()
-  {
+  public final void endDocument() {
     //handlerStack.handler.endProcessing();
     storeLocation();
   }
@@ -409,8 +475,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
    *  Stores a locator for future use.
    */
   @Override
-  public final void setDocumentLocator(Locator locator)
-  {
+  public final void setDocumentLocator(Locator locator) {
     this.locator = locator;
   }
 
@@ -421,19 +486,48 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
    *  Stores characters into the character buffer.
    */
   @Override
-  public final void characters(char[] ch, int start, int length)
-  {
+  public final void characters(char[] ch, int start, int length) {
     characterBuffer.append(ch, start, length);
     storeLocation();
+  }
+
+  protected void fireTextEvent() throws SAXException {
+    if (!isBlank(characterBuffer)) {
+      try {
+        callHandlerMethod(TEXT_EVENT, null);
+      } catch (Exception e) {
+	reportException(e);
+	throw new SAXException(e);
+      } finally {
+	characterBuffer.delete(0, characterBuffer.length());
+      }
+    }
   }
 
   /**
    *  Does nothing, except, it stores a location.
    */
   @Override
-  public final void ignorableWhitespace(char[] ch, int start, int length)
-  {
+  public final void ignorableWhitespace(char[] ch, int start, int length) {
     storeLocation();
+  }
+
+  @Override
+  public final void error(SAXParseException e) throws SAXException {
+    super.error(e);
+    reportException(e);
+  }
+
+  @Override
+  public final void fatalError(SAXParseException e) throws SAXException {
+    reportException(e);
+    super.fatalError(e);
+  }
+
+  @Override
+  public final void warning(SAXParseException e) throws SAXException {
+    super.warning(e);
+    reportException(e);
   }
 
   /**
@@ -447,17 +541,14 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
    *             a text description of the event. For example:
    *             "start element", "end element", ...
    */
-  protected void reportMissingHandler(String event)
-  {
-    Pair<String, String> element = elementStack.get(elementStack.size() - 1);
-    String uri = element.getLeft();
-    String name = element.getRight();
-    System.err.println(java.text.MessageFormat.format(
-        "Didn''t find any handler for the event: {0}.\n" +
-        "Last start element: '{'{1}'}':{2},\n" +
-        getLocation(),
-        event, uri, name));
-    // TODO:
+  protected void reportMissingHandler(String event) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Didn''t find any handler for the event: ")
+      .append(event)
+      .append("\n")
+      .append(getLocation());
+    printElementStack(sb);
+    System.err.println(sb.toString());
   }
 
   @Override
@@ -470,6 +561,31 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable
   public void toString(ToStringBuilder builder) {
     builder.append("handlers", handlers)
       .append("elementStack", elementStack);
+  }
+
+  protected void printElementStack(StringBuilder sb) {
+    String delimiter = "";
+    for (Pair<String, String> element : elementStack) {
+      sb.append(delimiter)
+	.append('{')
+	.append(element.getLeft())
+	.append('}')
+	.append(element.getRight());
+      delimiter = "/";
+    }
+  }
+
+  protected void reportException(Exception e) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Exception while reading a XML file!\n")
+      .append(e.getClass().getName())
+      .append("\n")
+      .append(e.getMessage())
+      .append("\n")
+      .append(getLocation())
+      .append("\n");
+    printElementStack(sb);
+    System.err.println(sb.toString());
   }
 
   public static void main(String[] args) throws Exception {

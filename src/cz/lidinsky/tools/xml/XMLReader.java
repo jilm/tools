@@ -366,7 +366,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
 
   protected void callHandlerMethod(int event, Attributes attributes) 
       throws IllegalAccessException, IllegalArgumentException,
-             InvocationTargetException {
+             InvocationTargetException, SAXException {
 
     boolean processed = false; // indicate that the event was processed
     Collection<Triple<Expression, Method, IXMLHandler>> handlers
@@ -389,6 +389,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
       if (processed) return;
     }
     reportMissingHandler(EVENT_LABELS[event]);
+    throw new SAXException("Missing handler");
   }
 
   /*

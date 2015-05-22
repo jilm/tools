@@ -38,14 +38,14 @@
 
     <target name="test" depends="compile" >
         <javac srcdir="${testsrcdir}" destdir="${bindir}" 
-            classpath="depend/commons-lang3.jar:depend/commons-collections.jar"
+            classpath="depend/commons-lang3.jar:depend/commons-collections.jar:depend/junit.jar"
 	    />
 	<mkdir dir="${reports}" />
         <junit printsummary="yes" haltonfailure="yes">
 	    <classpath>
 	        <pathelement location="${bindir}" />
                 <pathelement path="${java.class.path}" />
-                <pathelement path="depend/commons-lang3.jar:depend/commons-collections.jar" />
+                <pathelement path="depend/commons-lang3.jar:depend/commons-collections.jar:depend/junit.jar" />
 	    </classpath>
 	    <formatter type="plain" />
 	    <batchtest fork="yes" todir="${reports}">

@@ -69,7 +69,7 @@ public class XMLReaderTest extends XMLReader implements IXMLHandler
           handlers.iterator().next().getMiddle().getName());
   }
 
-  @Test
+  @Ignore @Test
   public void test3() throws Exception
   {
     reader.elementStack.add(new ImmutablePair(

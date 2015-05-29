@@ -24,80 +24,110 @@ import java.util.ArrayDeque;
 
 public class ToStringBuilder {
 
-  private DefaultToStringStyle style;
-
-  protected ArrayDeque<DefaultToStringStyle> styleStack
-      = new ArrayDeque<DefaultToStringStyle>();
+  protected StringBuilder sb;
 
   public ToStringBuilder() {
-    this.style = new DefaultToStringStyle(sb);
+    this(new StringBuilder());
   }
 
-  public ToStringBuilder(ToStringStyle style) {
-    this();
+  public ToStringBuilder(StringBuilder sb) {
+    this.sb = sb;
   }
 
-  protected StringBuilder sb = new StringBuilder();
+  protected ToStringBuilder(StringBuilder sb, String indent) {
+    this(sb);
+    this.indent = indent;
+  }
 
   public ToStringBuilder append(String fieldName, IToStringBuildable object) {
     if (fieldName != null) {
-      style.appendFieldName(fieldName);
+      appendFieldName(fieldName);
       appendValue(object);
-      style.appendFieldDelimiter();
+      appendFieldDelimiter();
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, Object object) {
     if (fieldName != null) {
-      style.appendFieldName(fieldName);
+      appendFieldName(fieldName);
       appendValue(object);
-      style.appendFieldDelimiter();
+      appendFieldDelimiter();
     }
+    return this;
+  }
+
+  public ToStringBuilder append(String fieldName, String value) {
+    if (fieldName != null) {
+      appendFieldName(fieldName);
+      appendValue(value);
+      appendFieldDelimiter();
+    }
+    return this;
+  }
+
+  public ToStringBuilder append(String value) {
+    if (value != null) {
+      appendValue(value);
+    }
+    return this;
+  }
+
+  public ToStringBuilder append(String fieldName, String[] value) {
+    if (fieldName != null) {
+      appendFieldName(fieldName);
+      appendValue(value);
+      appendFieldDelimiter();
+    }
+    return this;
+  }
+
+  public ToStringBuilder append(String[] value) {
+    appendValue(value);
     return this;
   }
 
   public ToStringBuilder append(String fieldName, int value) {
     if (fieldName != null) {
-      style.appendFieldName(fieldName);
-      style.appendValue(value);
-      style.appendFieldDelimiter();
+      appendFieldName(fieldName);
+      appendValue(value);
+      appendFieldDelimiter();
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, long value) {
     if (fieldName != null) {
-      style.appendFieldName(fieldName);
-      style.appendValue(value);
-      style.appendFieldDelimiter();
+      appendFieldName(fieldName);
+      appendValue(value);
+      appendFieldDelimiter();
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, boolean value) {
     if (fieldName != null) {
-      style.appendFieldName(fieldName);
-      style.appendValue(value);
-      style.appendFieldDelimiter();
+      appendFieldName(fieldName);
+      appendValue(value);
+      appendFieldDelimiter();
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, float value) {
     if (fieldName != null) {
-      style.appendFieldName(fieldName);
-      style.appendValue(value);
-      style.appendFieldDelimiter();
+      appendFieldName(fieldName);
+      appendValue(value);
+      appendFieldDelimiter();
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, double value) {
     if (fieldName != null) {
-      style.appendFieldName(fieldName);
-      style.appendValue(value);
-      style.appendFieldDelimiter();
+      appendFieldName(fieldName);
+      appendValue(value);
+      appendFieldDelimiter();
     }
     return this;
   }
@@ -117,33 +147,33 @@ public class ToStringBuilder {
   }
 
   public ToStringBuilder append(int value) {
-    style.appendValue(value);
+    appendValue(value);
     return this;
   }
 
   public ToStringBuilder append(long value) {
-    style.appendValue(value);
+    appendValue(value);
     return this;
   }
 
   public ToStringBuilder append(boolean value) {
-    style.appendValue(value);
+    appendValue(value);
     return this;
   }
 
   public ToStringBuilder append(float value) {
-    style.appendValue(value);
+    appendValue(value);
     return this;
   }
 
   public ToStringBuilder append(double value) {
-    style.appendValue(value);
+    appendValue(value);
     return this;
   }
 
   public ToStringBuilder append(String fieldName, IToStringBuildable[] value) {
     if (fieldName != null) {
-      style.appendFieldName(fieldName);
+      appendFieldName(fieldName);
       appendValue(value);
     }
     return this;
@@ -151,115 +181,131 @@ public class ToStringBuilder {
 
   public ToStringBuilder append(String fieldName, Object[] value) {
     if (fieldName != null) {
-      style.appendFieldName(fieldName);
+      appendFieldName(fieldName);
       appendValue(value);
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, int[] value) {
-    style.append(fieldName, value);
+    if (fieldName != null) {
+      appendFieldName(fieldName);
+      appendValue(value);
+    }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, long[] value) {
-    style.append(fieldName, value);
+    if (fieldName != null) {
+      appendFieldName(fieldName);
+      appendValue(value);
+    }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, boolean[] value) {
-    style.append(fieldName, value);
+    if (fieldName != null) {
+      appendFieldName(fieldName);
+      appendValue(value);
+    }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, float[] value) {
-    style.append(fieldName, value);
+    if (fieldName != null) {
+      appendFieldName(fieldName);
+      appendValue(value);
+    }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, double[] value) {
-    style.append(fieldName, value);
+    if (fieldName != null) {
+      appendFieldName(fieldName);
+      appendValue(value);
+    }
     return this;
   }
 
   public ToStringBuilder append(int[] value) {
-    style.append(value);
+    appendValue(value);
     return this;
   }
 
   public ToStringBuilder append(long[] value) {
-    style.append(value);
+    appendValue(value);
     return this;
   }
 
   public ToStringBuilder append(boolean[] value) {
-    style.append(value);
+    appendValue(value);
     return this;
   }
 
   public ToStringBuilder append(float[] value) {
-    style.append(value);
+    appendValue(value);
     return this;
   }
 
   public ToStringBuilder append(double[] value) {
-    style.append(value);
+    appendValue(value);
     return this;
   }
 
+  //-----------------------------------
+
   protected void appendValue(IToStringBuildable object) {
     if (object == null) {
-      style.appendNull();
+      appendNull();
     } else {
-      style.appendClassName(object.getClass());
-      style.appendHashCode(object);
-      style.startObject();
-      object.toString(this);
-      style.endObject();
+      appendClassName(object.getClass());
+      appendHashCode(object);
+      startObject();
+      object.toString(new ToStringBuilder(sb, incIndent()));
+      endObject();
     }
   }
 
   protected void appendValue(IToStringBuildable[] value) {
     if (value == null) {
-      style.appendNull();
+      appendNull();
     } else {
-      style.appendClassName(value.getClass());
-      style.appendHashCode(value);
-      style.startArray();
-      for (int i = 0; i < style.getArraySize(value.length); i++) {
+      appendClassName(value.getClass());
+      appendHashCode(value);
+      startArray();
+      for (int i = 0; i < getArraySize(value.length); i++) {
         appendValue(value[i]);
-        style.appendArrayDelimiter();
+        appendArrayDelimiter();
       }
-      style.endArray();
+      endArray();
     }
   }
 
   protected void appendValue(Object[] value) {
     if (value == null) {
-      style.appendNull();
+      appendNull();
     } else {
-      style.appendClassName(value.getClass());
-      style.appendHashCode(value);
-      style.startArray();
-      for (int i = 0; i < style.getArraySize(value.length); i++) {
+      appendClassName(value.getClass());
+      appendHashCode(value);
+      startArray();
+      for (int i = 0; i < getArraySize(value.length); i++) {
         appendValue(value[i]);
-        style.appendArrayDelimiter();
+        appendArrayDelimiter();
       }
-      style.endArray();
+      endArray();
     }
   }
 
   protected void appendValue(Object object) {
     if (object == null) {
-      style.appendNull();
+      appendNull();
     } else {
-
       if (object instanceof IToStringBuildable) {
         appendValue((IToStringBuildable)object);
       } else if (object instanceof Integer) {
-        style.appendValue(((Integer)object).intValue());
+        appendValue(((Integer)object).intValue());
       } else {
-        style.appendValue(object);
+        sb.append(object);
       }
     }
   }
@@ -267,6 +313,231 @@ public class ToStringBuilder {
   @Override
   public String toString() {
     return sb.toString();
+  }
+
+  //-----------------------------------
+
+  protected void appendValue(String value) {
+    if (value == null) {
+      appendNull();
+    } else {
+      sb.append(value);
+    }
+  }
+
+  protected void appendValue(int value) {
+    sb.append(value);
+  }
+
+  protected void appendValue(long value) {
+    sb.append(value);
+  }
+
+  protected void appendValue(boolean value) {
+    sb.append(value);
+  }
+
+  protected void appendValue(float value) {
+    sb.append(value);
+  }
+
+  protected void appendValue(double value) {
+    sb.append(value);
+  }
+
+  protected void appendValue(String[] value) {
+    if (value == null) {
+      appendNull();
+    } else {
+      startArray();
+      for (int i = 0; i < getArraySize(value.length); i++) {
+        appendValue(value[i]);
+        appendArrayDelimiter();
+      }
+      endArray();
+    }
+  }
+
+  protected void appendValue(int[] value) {
+    if (value == null) {
+      appendNull();
+    } else {
+      startArray();
+      for (int i = 0; i < getArraySize(value.length); i++) {
+        appendValue(value[i]);
+        appendArrayDelimiter();
+      }
+      endArray();
+    }
+  }
+
+  protected void appendValue(long[] value) {
+    if (value == null) {
+      appendNull();
+    } else {
+      startArray();
+      for (int i = 0; i < getArraySize(value.length); i++) {
+        appendValue(value[i]);
+        appendArrayDelimiter();
+      }
+      endArray();
+    }
+  }
+
+  protected void appendValue(boolean[] value) {
+    if (value == null) {
+      appendNull();
+    } else {
+      startArray();
+      for (int i = 0; i < getArraySize(value.length); i++) {
+        appendValue(value[i]);
+        appendArrayDelimiter();
+      }
+      endArray();
+    }
+  }
+
+  protected void appendValue(float[] value) {
+    if (value == null) {
+      appendNull();
+    } else {
+      startArray();
+      for (int i = 0; i < getArraySize(value.length); i++) {
+        appendValue(value[i]);
+        appendArrayDelimiter();
+      }
+      endArray();
+    }
+  }
+
+  protected void appendValue(double[] value) {
+    if (value == null) {
+      appendNull();
+    } else {
+      startArray();
+      for (int i = 0; i < getArraySize(value.length); i++) {
+        appendValue(value[i]);
+        appendArrayDelimiter();
+      }
+      endArray();
+    }
+  }
+
+  //-------------------------
+
+  protected int fieldCount = 0;
+
+  protected void appendFieldName(String fieldName) {
+    if (fieldName != null) {
+      sb.append(fieldName);
+      appendFieldValueDelimiter();
+    }
+  }
+
+  protected void appendHashCode(Object object) {
+    sb.append('@');
+    sb.append(Integer.toHexString(object.hashCode()));
+  }
+
+  protected boolean simpleClassName = true;
+
+  protected void appendClassName(Class _class) {
+    if (simpleClassName) {
+      sb.append(_class.getSimpleName());
+    } else {
+      sb.append(_class.getName());
+    }
+  }
+
+  protected void startObject() {
+    sb.append('[');
+  }
+
+  protected void endObject() {
+    if (fieldCount > 0) {
+      removeFieldDelimiter();
+    }
+    sb.append(']');
+  }
+
+  protected void removeLastChars(int count) {
+    sb.delete(sb.length() - count, sb.length());
+  }
+
+  protected void appendFieldValueDelimiter() {
+    sb.append('=');
+    fieldCount++;
+  }
+
+  protected String fieldDelimiter = ",";
+
+  protected void appendFieldDelimiter() {
+    sb.append(fieldDelimiter);
+  }
+
+  protected void removeFieldDelimiter() {
+    removeLastChars(fieldDelimiter.length());
+  }
+
+  protected void appendNull() {
+    sb.append("<null>");
+  }
+
+  protected void startArray() {
+    sb.append('{');
+  }
+
+  protected void endArray() {
+    if (arrayElementCount > arraySize) {
+      sb.append("... ");
+      sb.append("<total size: ");
+      sb.append(arrayElementCount);
+      sb.append(">");
+      sb.append('}');
+    } else {
+      removeArrayDelimiter();
+      sb.append('}');
+    }
+  }
+
+  protected void removeArrayDelimiter() {
+    removeLastChars(arrayDelimiter.length());
+  }
+
+  protected String arrayDelimiter = ",";
+
+  protected int arrayElementCount = 0;
+
+  protected void appendArrayDelimiter() {
+    sb.append(arrayDelimiter);
+    arrayElementCount++;
+  }
+
+  protected static int arraySize = 10;
+
+  protected int getArraySize(int arrayLength) {
+    return Math.min(arraySize, arrayLength);
+  }
+
+  protected String indent = "";
+
+  protected String incIndent() {
+    return indent;
+  }
+
+  protected void newLine() {
+    sb.append("\n")
+      .append(indent);
+  }
+
+  protected int position = 0;
+
+  protected void mark() {
+    position = sb.length();
+  }
+
+  protected void removeToMark() {
+    sb.delete(position, sb.length());
   }
 
 }

@@ -58,7 +58,8 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
 
   protected Object decorated;
 
-  protected HashMap<String, BufferEntry> buffer;
+  protected HashMap<String, BufferEntry> buffer
+      = new HashMap<String, BufferEntry>();
 
   protected Set<Class<? extends Annotation>> getterAnnotations;
   protected Set<Class<? extends Annotation>> setterAnnotations;
@@ -95,6 +96,10 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
     this.decorated = notNull(object);
     this.setterFactory = notNull(setterFactory);
     scan();
+  }
+
+  public void setSetterFilter(Predicate<AccessibleObject> filter) {
+    this.setterFilter = notNull(filter);
   }
 
   /*
@@ -195,11 +200,19 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
     }
 
     T getValue() {
-      return getter.create();
+      if (getter == null) {
+	return null; // TODO:
+      } else {
+        return getter.create();
+      }
     }
 
     void setValue(T value) {
-      setter.execute(value);
+      if (setter == null) {
+	// TODO:
+      } else {
+        setter.execute(value);
+      }
     }
 
   }
@@ -573,6 +586,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
 
     return new Closure<String>() {
       public void execute(String value) {
+        System.out.println("String closure " + value);
 	try {
           if (dataType == int.class || dataType == Integer.class) {
             set(object, member, Integer.parseInt(value), setAccessible);

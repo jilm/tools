@@ -175,6 +175,7 @@ public class ToStringBuilder {
     if (fieldName != null) {
       appendFieldName(fieldName);
       appendValue(value);
+      appendFieldDelimiter();
     }
     return this;
   }
@@ -183,6 +184,7 @@ public class ToStringBuilder {
     if (fieldName != null) {
       appendFieldName(fieldName);
       appendValue(value);
+      appendFieldDelimiter();
     }
     return this;
   }
@@ -191,6 +193,7 @@ public class ToStringBuilder {
     if (fieldName != null) {
       appendFieldName(fieldName);
       appendValue(value);
+      appendFieldDelimiter();
     }
     return this;
   }
@@ -199,6 +202,7 @@ public class ToStringBuilder {
     if (fieldName != null) {
       appendFieldName(fieldName);
       appendValue(value);
+      appendFieldDelimiter();
     }
     return this;
   }
@@ -207,6 +211,7 @@ public class ToStringBuilder {
     if (fieldName != null) {
       appendFieldName(fieldName);
       appendValue(value);
+      appendFieldDelimiter();
     }
     return this;
   }
@@ -215,6 +220,7 @@ public class ToStringBuilder {
     if (fieldName != null) {
       appendFieldName(fieldName);
       appendValue(value);
+      appendFieldDelimiter();
     }
     return this;
   }
@@ -223,6 +229,7 @@ public class ToStringBuilder {
     if (fieldName != null) {
       appendFieldName(fieldName);
       appendValue(value);
+      appendFieldDelimiter();
     }
     return this;
   }
@@ -261,7 +268,9 @@ public class ToStringBuilder {
       appendClassName(object.getClass());
       appendHashCode(object);
       startObject();
-      object.toString(new ToStringBuilder(sb, incIndent()));
+      ToStringBuilder nested = new ToStringBuilder(sb, incIndent());
+      object.toString(nested);
+      nested.removeFieldDelimiter();
       endObject();
     }
   }
@@ -454,9 +463,6 @@ public class ToStringBuilder {
   }
 
   protected void endObject() {
-    if (fieldCount > 0) {
-      removeFieldDelimiter();
-    }
     sb.append(']');
   }
 
@@ -476,7 +482,9 @@ public class ToStringBuilder {
   }
 
   protected void removeFieldDelimiter() {
-    removeLastChars(fieldDelimiter.length());
+    if (fieldCount > 0) {
+      removeLastChars(fieldDelimiter.length());
+    }
   }
 
   protected void appendNull() {

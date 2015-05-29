@@ -35,15 +35,30 @@ public class ToStringMultilineStyle extends ToStringBuilder {
   //-----------------------------------
 
   @Override
+  protected void appendValue(IToStringBuildable object) {
+    if (object == null) {
+      appendNull();
+    } else {
+      appendClassName(object.getClass());
+      appendHashCode(object);
+      startObject();
+      ToStringBuilder nested = new ToStringMultilineStyle(sb, incIndent());
+      nested.newLine();
+      object.toString(nested);
+      nested.removeFieldDelimiter();
+      endObject();
+    }
+  }
+
+  @Override
   protected void startObject() {
     sb.append('[');
     mark();
-    newLine();
   }
 
   @Override
   protected void endObject() {
-    removeToMark();
+    newLine();
     sb.append(']');
     mark();
     newLine();
@@ -59,6 +74,11 @@ public class ToStringMultilineStyle extends ToStringBuilder {
   @Override
   protected String incIndent() {
     return indent + "  ";
+  }
+
+  @Override
+  protected void removeFieldDelimiter() {
+    removeToMark();
   }
 
 }

@@ -66,7 +66,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
 
   protected Class<T> valueClass;
 
-  protected Predicate<AccessibleObject> getterFilter;
+  protected Predicate<? super AccessibleObject> getterFilter;
   protected Predicate<AccessibleObject> setterFilter;
   protected Transformer<AccessibleObject, Closure<T>> setterFactory;
 
@@ -100,6 +100,10 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
 
   public void setSetterFilter(Predicate<AccessibleObject> filter) {
     this.setterFilter = notNull(filter);
+  }
+
+  public void setGetterFilter(Predicate<? super AccessibleObject> filter) {
+    this.getterFilter = notNull(filter);
   }
 
   /*
@@ -139,9 +143,9 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
   public T put(String key, T value) {
     BufferEntry entry = buffer.get(key);
     if (entry == null) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("Given key was not found! " + key);
     } else if (!entry.isWritable()) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("Given key is not writable! " + key);
     } else {
       T oldValue = entry.getValue();
       entry.setValue(value);
@@ -201,7 +205,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
 
     T getValue() {
       if (getter == null) {
-	return null; // TODO:
+        return null; // TODO:
       } else {
         return getter.create();
       }
@@ -209,7 +213,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
 
     void setValue(T value) {
       if (setter == null) {
-	// TODO:
+        // TODO:
       } else {
         setter.execute(value);
       }
@@ -248,14 +252,14 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
 
   protected Predicate<AccessibleObject> getDefaultGetterFilter() {
     return PredicateUtils.allPredicate(
-	getGetterSignatureCheckPredicate(),
-	getGetterDataTypeCheckPredicate(valueClass));
+        getGetterSignatureCheckPredicate(),
+        getGetterDataTypeCheckPredicate(valueClass));
   }
 
   protected Predicate<AccessibleObject> getDefaultSetterFilter() {
     return PredicateUtils.allPredicate(
-	getSetterSignatureCheckPredicate(),
-	getSetterDataTypeCheckPredicate(valueClass));
+        getSetterSignatureCheckPredicate(),
+        getSetterDataTypeCheckPredicate(valueClass));
   }
 
   protected BufferEntry getBufferEntry(final String key) {
@@ -296,34 +300,45 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
     notNull(dataType);
     return new Predicate<AccessibleObject>() {
       public boolean evaluate(AccessibleObject object) {
-	Class objectDataType;
-	if (object instanceof Field) {
-	  objectDataType = ((Field)object).getType();
-	} else if (object instanceof Method) {
-	  objectDataType = ((Method)object).getReturnType();
-	} else {
-	  throw new IllegalArgumentException(); // TODO:
-	}
-	return dataType.isAssignableFrom(objectDataType);
+        Class objectDataType;
+        if (object instanceof Field) {
+          objectDataType = ((Field)object).getType();
+        } else if (object instanceof Method) {
+          objectDataType = ((Method)object).getReturnType();
+        } else {
+          throw new IllegalArgumentException(); // TODO:
+        }
+        return dataType.isAssignableFrom(objectDataType);
       }
     };
   }
 
-  public static Predicate<AccessibleObject> getSetterDataTypeCheckPredicate(
-      final Class dataType) {
+  public static <T> Predicate<AccessibleObject> getSetterDataTypeCheckPredicate(
+      final Class<T> dataType) {
 
     notNull(dataType);
     return new Predicate<AccessibleObject>() {
       public boolean evaluate(final AccessibleObject object) {
-	Class objectDataType;
-	if (object instanceof Field) {
-	  objectDataType = ((Field)object).getType();
-	} else if (object instanceof Method) {
-	  objectDataType = ((Method)object).getParameterTypes()[0];
-	} else {
-	  throw new IllegalArgumentException(); // TODO:
-	}
-	return objectDataType.isAssignableFrom(dataType);
+        Class objectDataType;
+        if (object instanceof Field) {
+          objectDataType = ((Field)object).getType();
+        } else if (object instanceof Method) {
+          objectDataType = ((Method)object).getParameterTypes()[0];
+        } else {
+          throw new IllegalArgumentException(); // TODO:
+        }
+        boolean result = dataType.isAssignableFrom(objectDataType);
+        return result;
+      }
+    };
+  }
+
+  public static Predicate<AccessibleObject> getHasAnnotationPredicate(
+      final Class<? extends Annotation> annotation) {
+    return new Predicate<AccessibleObject>() {
+      public boolean evaluate(final AccessibleObject object) {
+        boolean result = object.isAnnotationPresent(annotation);
+        return result;
       }
     };
   }
@@ -334,8 +349,8 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
     notNull(anno);
     return new Predicate<AnnotatedElement>() {
       public boolean evaluate(final AnnotatedElement object) {
-	notNull(object);
-	return object.isAnnotationPresent(anno);
+        notNull(object);
+        return object.isAnnotationPresent(anno);
       }
     };
   }
@@ -355,7 +370,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
   public static Predicate<AccessibleObject> getGetterSignatureCheckPredicate() {
     return new Predicate<AccessibleObject>() {
       public boolean evaluate(AccessibleObject object) {
-	return hasGetterSignature(object);
+        return hasGetterSignature(object);
       }
     };
   }
@@ -375,7 +390,8 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
   public static Predicate<AccessibleObject> getSetterSignatureCheckPredicate() {
     return new Predicate<AccessibleObject>() {
       public boolean evaluate(AccessibleObject object) {
-	return hasSetterSignature(object);
+        boolean result = hasSetterSignature(object);
+        return result;
       }
     };
   }
@@ -396,7 +412,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
 
     return new Transformer<AccessibleObject, String>() {
       public String transform(AccessibleObject object) {
-	return getGetterKey(object);
+        return getGetterKey(object);
       }
     };
   }
@@ -407,7 +423,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
     notBlank(key);
     return new Predicate<AccessibleObject>() {
       public boolean evaluate(final AccessibleObject member) {
-	return getGetterKey(member).equals(key);
+        return getGetterKey(member).equals(key);
       }
     };
   }
@@ -428,7 +444,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
 
     return new Transformer<AccessibleObject, String>() {
       public String transform(AccessibleObject object) {
-	return getSetterKey(object);
+        return getSetterKey(object);
       }
     };
   }
@@ -439,7 +455,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
     notBlank(key);
     return new Predicate<AccessibleObject>() {
       public boolean evaluate(final AccessibleObject member) {
-	return getSetterKey(member).equals(key);
+        return getSetterKey(member).equals(key);
       }
     };
   }
@@ -450,7 +466,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
     } else if (object instanceof Method) {
       String key = ((Method)object).getName();
       if ((startsWith(key, "get") || startsWith(key, "set"))
-	  && key.length() > 3) {
+          && key.length() > 3) {
         key = right(key, key.length() - 3);
         key = uncapitalize(key);
       }
@@ -488,7 +504,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
         getMethods(object.getClass()), getFields(object.getClass()));
     Predicate<AccessibleObject> filter = PredicateUtils.allPredicate(
         getGetterSignatureCheckPredicate(),
-	hasGetterKeyPredicate(key));
+        hasGetterKeyPredicate(key));
     List<AccessibleObject> getters = ListUtils.select(members, filter);
     Collections.sort(getters, Collections.reverseOrder(getComparator()));
     if (getters.size() == 0) {
@@ -506,13 +522,13 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
     notNull(member);
     return new Factory<T>() {
       public T create() {
-	try {
-	  return get(object, member, setAccessible);
-	} catch (IllegalAccessException e) {
-	  throw new IllegalArgumentException(e);
-	} catch (InvocationTargetException e) {
-	  throw new IllegalArgumentException(e);
-	}
+        try {
+          return get(object, member, setAccessible);
+        } catch (IllegalAccessException e) {
+          throw new IllegalArgumentException(e);
+        } catch (InvocationTargetException e) {
+          throw new IllegalArgumentException(e);
+        }
       }
     };
   }
@@ -547,7 +563,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
         getMethods(object.getClass()), getFields(object.getClass()));
     Predicate<AccessibleObject> filter = PredicateUtils.allPredicate(
         getSetterSignatureCheckPredicate(),
-	hasSetterKeyPredicate(key));
+        hasSetterKeyPredicate(key));
     List<AccessibleObject> setters = ListUtils.select(members, filter);
     Collections.sort(setters, Collections.reverseOrder(getComparator()));
     if (setters.size() == 0) {
@@ -565,13 +581,13 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
     notNull(member);
     return new Closure<T>() {
       public void execute(T value) {
-	try {
-	  set(object, member, value, setAccessible);
-	} catch (IllegalAccessException e) {
-	  throw new IllegalArgumentException(e);
-	} catch (InvocationTargetException e) {
-	  throw new IllegalArgumentException(e);
-	}
+        try {
+          set(object, member, value, setAccessible);
+        } catch (IllegalAccessException e) {
+          throw new IllegalArgumentException(e);
+        } catch (InvocationTargetException e) {
+          throw new IllegalArgumentException(e);
+        }
       }
     };
   }
@@ -586,52 +602,51 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
 
     return new Closure<String>() {
       public void execute(String value) {
-        System.out.println("String closure " + value);
-	try {
+        try {
           if (dataType == int.class || dataType == Integer.class) {
             set(object, member, Integer.parseInt(value), setAccessible);
           } else if (dataType == long.class || dataType == Long.class) {
             set(object, member, Long.parseLong(value), setAccessible);
-	  } else if (dataType == float.class || dataType == Float.class) {
+          } else if (dataType == float.class || dataType == Float.class) {
             set(object, member, Float.parseFloat(value), setAccessible);
-	  } else if (dataType == double.class || dataType == Double.class) {
+          } else if (dataType == double.class || dataType == Double.class) {
             set(object, member, Double.parseDouble(value), setAccessible);
-	  } else if (dataType == boolean.class || dataType == Boolean.class) {
-	    set(object, member, Boolean.parseBoolean(value), setAccessible);
-	  } else if (dataType == String.class) {
-	    set(object, member, value, setAccessible);
-	  } else {
-	    throw new IllegalArgumentException();
-	  }
+          } else if (dataType == boolean.class || dataType == Boolean.class) {
+            set(object, member, Boolean.parseBoolean(value), setAccessible);
+          } else if (dataType == String.class) {
+            set(object, member, value, setAccessible);
+          } else {
+            throw new IllegalArgumentException();
+          }
         } catch (IllegalAccessException e) {
-	  throw new IllegalArgumentException(e);
-	} catch (InvocationTargetException e) {
-	  throw new IllegalArgumentException(e);
-	}
+          throw new IllegalArgumentException(e);
+        } catch (InvocationTargetException e) {
+          throw new IllegalArgumentException(e);
+        }
       }
     };
   }
 
   public static <T> Transformer<AccessibleObject, Closure<T>>
       getSetterClosureFactory(
-	  final Object object,
-	  final boolean setAccessible) {
+          final Object object,
+          final boolean setAccessible) {
 
     return new Transformer<AccessibleObject, Closure<T>>() {
       public Closure<T> transform(final AccessibleObject member) {
-	return getSetterClosure(object, member, setAccessible);
+        return getSetterClosure(object, member, setAccessible);
       }
     };
   }
 
   public static Transformer<AccessibleObject, Closure<String>>
       getStringSetterClosureFactory(
-	  final Object object,
-	  final boolean setAccessible) {
+          final Object object,
+          final boolean setAccessible) {
 
     return new Transformer<AccessibleObject, Closure<String>>() {
       public Closure<String> transform(final AccessibleObject member) {
-	return getStringSetterClosure(object, member, setAccessible);
+        return getStringSetterClosure(object, member, setAccessible);
       }
     };
   }
@@ -641,9 +656,9 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
       return ((Field)member).getType();
     } else if (member instanceof Method) {
       if (((Method)member).getParameterTypes().length == 0) {
-	return ((Method)member).getReturnType();
+        return ((Method)member).getReturnType();
       } else {
-	return ((Method)member).getParameterTypes()[0];
+        return ((Method)member).getParameterTypes()[0];
       }
     } else {
       throw new IllegalArgumentException();
@@ -653,21 +668,21 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
   public static Comparator<AccessibleObject> getComparator() {
     return new Comparator<AccessibleObject>() {
       public int compare(AccessibleObject o1, AccessibleObject o2) {
-	int rank1 = o1.isAnnotationPresent(Getter.class) ||
-	    o1.isAnnotationPresent(Setter.class) ? 1 : 0;
-	int rank2 = o2.isAnnotationPresent(Getter.class) ||
-	    o2.isAnnotationPresent(Setter.class) ? 1 : 0;
+        int rank1 = o1.isAnnotationPresent(Getter.class) ||
+            o1.isAnnotationPresent(Setter.class) ? 1 : 0;
+        int rank2 = o2.isAnnotationPresent(Getter.class) ||
+            o2.isAnnotationPresent(Setter.class) ? 1 : 0;
         if (rank1 != rank2) return rank1 - rank2;
-	rank1 = Modifier.isPublic(((Member)o1).getModifiers()) ? 1 : 0;
-	rank2 = Modifier.isPublic(((Member)o2).getModifiers()) ? 1 : 0;
+        rank1 = Modifier.isPublic(((Member)o1).getModifiers()) ? 1 : 0;
+        rank2 = Modifier.isPublic(((Member)o2).getModifiers()) ? 1 : 0;
         if (rank1 != rank2) return rank1 - rank2;
         rank1 = o1 instanceof Method ? 1 : 0;
         rank2 = o2 instanceof Method ? 1 : 0;
         return rank1 - rank2;
       }
       public boolean equals(Object object) {
-	if (object == null) return false;
-	return this == object;
+        if (object == null) return false;
+        return this == object;
       }
     };
   }

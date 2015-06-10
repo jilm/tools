@@ -51,6 +51,23 @@ public class ToStringMultilineStyle extends ToStringBuilder {
   }
 
   @Override
+  protected void appendValue(Iterable value) {
+    if (value == null) {
+      appendNull();
+    } else {
+      appendClassName(value.getClass());
+      appendHashCode(value);
+      startArray();
+      for (Object element : value) {
+        appendValue(element);
+        newLine();
+        //appendArrayDelimiter();
+      }
+      endArray();
+    }
+  }
+
+  @Override
   protected void startObject() {
     sb.append('[');
     mark();

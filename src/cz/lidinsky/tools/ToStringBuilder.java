@@ -66,6 +66,15 @@ public class ToStringBuilder {
     return this;
   }
 
+  public ToStringBuilder append(String fieldName, Iterable value) {
+    if (fieldName != null) {
+      appendFieldName(fieldName);
+      appendValue(value);
+      appendFieldDelimiter();
+    }
+    return this;
+  }
+
   public ToStringBuilder append(String value) {
     if (value != null) {
       appendValue(value);
@@ -140,6 +149,13 @@ public class ToStringBuilder {
   }
 
   public ToStringBuilder append(Object object) {
+    if (object != null) {
+      appendValue(object);
+    }
+    return this;
+  }
+
+  public ToStringBuilder append(Iterable object) {
     if (object != null) {
       appendValue(object);
     }
@@ -316,6 +332,21 @@ public class ToStringBuilder {
       } else {
         sb.append(object);
       }
+    }
+  }
+
+  protected void appendValue(Iterable value) {
+    if (value == null) {
+      appendNull();
+    } else {
+      appendClassName(value.getClass());
+      appendHashCode(value);
+      startArray();
+      for (Object element : value) {
+        appendValue(element);
+        appendArrayDelimiter();
+      }
+      endArray();
     }
   }
 

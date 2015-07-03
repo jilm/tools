@@ -54,6 +54,8 @@ public class ToStringMultilineStyle extends ToStringBuilder {
   protected void appendValue(Iterable value) {
     if (value == null) {
       appendNull();
+    } else if (!value.iterator().hasNext()) {
+      appendEmptyCollection();
     } else {
       appendClassName(value.getClass());
       appendHashCode(value);

@@ -45,6 +45,16 @@ public class BaseException extends RuntimeException {
     return this;
   }
 
+  public BaseException set(String key, int value) {
+    fields.put(key, Integer.valueOf(value).toString());
+    return this;
+  }
+
+  public BaseException set(String key, Object value) {
+    fields.put(key, value.toString());
+    return this;
+  }
+
   public String getMessage() {
     StringBuilder sb = new StringBuilder()
       .append("EXCEPTION !");

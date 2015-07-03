@@ -66,7 +66,7 @@ import org.apache.commons.collections4.iterators.FilterIterator;
 /**
  *
  *  Uses a SAX parser to read given XML document. This class
- *  serves like a dispatcher which receives events from parser
+ *  serves like a dispatcher which receives events from the parser
  *  and hand them over to the custom handler object. It uses
  *  annotations to choose appropriate receiver method for a
  *  given event.
@@ -96,16 +96,16 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
 
   /** Handler objects. */
   protected ArrayList<IXMLHandler> handlerObjects
-			                     = new ArrayList<IXMLHandler>();
+        		                     = new ArrayList<IXMLHandler>();
 
   /** Handler methods for events. */
   protected ArrayList<ArrayList<Triple<Expression, Method, IXMLHandler>>>
-								   handlers;
+        							   handlers;
 
   /** Contains current element path. Each entry contains uri and element
       local name. */
   protected ArrayList<Pair<String, String>> elementStack
-		                    = new ArrayList<Pair<String, String>>();
+        	                    = new ArrayList<Pair<String, String>>();
 
   /**
    *  Initialize the internal data structures.
@@ -185,13 +185,13 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
     sb.append('.');
     if (publicId != null) {
       sb.append("Public id: ")
-	.append(publicId)
-	.append(".");
+        .append(publicId)
+        .append(".");
     }
     if (systemId != null) {
       sb.append("System id: ")
-	.append(systemId)
-	.append(".");
+        .append(systemId)
+        .append(".");
     }
     return sb.toString();
   }
@@ -199,7 +199,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
   /**
    *  Adds the handler object. Methods of this object are used to
    *  respond to the xml start element and xml end element events.
-   *  Such methods must be annotated by AXMLStartElement and 
+   *  Such methods must be annotated by AXMLStartElement and
    *  AXMLEndElement annotations.
    */
   public void addHandler(IXMLHandler handler) {
@@ -209,7 +209,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
     // Get default uri for the handler
     String defaultUri = "";
     AXMLDefaultUri defUriAnno
-	= handler.getClass().getAnnotation(AXMLDefaultUri.class);
+        = handler.getClass().getAnnotation(AXMLDefaultUri.class);
     if (defUriAnno != null) {
       defaultUri = defUriAnno.value();
     }
@@ -219,23 +219,23 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
 
       Class<? extends Annotation> annotationClass = annotationClasses.get(i);
       Method[] methods = getMethodsWithAnnotation(
-	              handler.getClass(), annotationClass);
+                      handler.getClass(), annotationClass);
       for (Method method : methods) {
-	Annotation annotation = method.getAnnotation(annotationClass);
-	String annotationValue = getAnnotationValue(annotation);
-	handlers.get(i).add(
-	    new ImmutableTriple(
-		new Expression().parse(annotationValue, defaultUri),
-		method, handler
-	    )
-	);
+        Annotation annotation = method.getAnnotation(annotationClass);
+        String annotationValue = getAnnotationValue(annotation);
+        handlers.get(i).add(
+            new ImmutableTriple(
+        	new Expression().parse(annotationValue, defaultUri),
+        	method, handler
+            )
+        );
       }
 
       // Sort the handler list
       sort(
-	  handlers.get(i), transformedComparator(
-	      (Comparator<Expression>)new Expression(), 
-	      getGetLeftTransformer(Expression.class))
+          handlers.get(i), transformedComparator(
+              (Comparator<Expression>)new Expression(),
+              getGetLeftTransformer(Expression.class))
       );
 
     }
@@ -247,20 +247,20 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
     handlerObjects.remove(notNull(handler));
 
     Transformer<Triple<?, ?, IXMLHandler>, IXMLHandler>
-	getRightTransformer = getGetRightTransformer(IXMLHandler.class);
+        getRightTransformer = getGetRightTransformer(IXMLHandler.class);
 
     for (int i = 0; i < EVENTS; i++) {
       filter(handlers.get(i), getTransformedPredicate(
-	  identityPredicate(handler), getRightTransformer));
+          identityPredicate(handler), getRightTransformer));
     }
   }
 
   protected static <I, O> Predicate<I> getTransformedPredicate(
-	    final Predicate<O> predicate, final Transformer<I, O> transformer) {
+            final Predicate<O> predicate, final Transformer<I, O> transformer) {
 
     return new Predicate<I>() {
       public boolean evaluate(I object) {
-	return predicate.evaluate(transformer.transform(object));
+        return predicate.evaluate(transformer.transform(object));
       }
     };
   }
@@ -270,7 +270,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
 
     return new Transformer<Triple<O, ?, ?>, O>() {
       public O transform(Triple<O, ?, ?> triple) {
-	return triple.getLeft();
+        return triple.getLeft();
       }
     };
   }
@@ -280,7 +280,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
 
     return new Transformer<Triple<?, ?, O>, O>() {
       public O transform(Triple<?, ?, O> triple) {
-	return triple.getRight();
+        return triple.getRight();
       }
     };
   }
@@ -301,7 +301,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
   }
 
   /**
-   *  Creates new SAX parser and reads the XML document from 
+   *  Creates new SAX parser and reads the XML document from
    *  the given input stream.
    *
    *  @param inputStream
@@ -349,22 +349,22 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
 
     // Predicate to filter only handlers that are satisfied
     Predicate<Expression> evaluatePredicate
-	= new Predicate<Expression>() {
+        = new Predicate<Expression>() {
       public boolean evaluate(Expression expression) {
-	return expression.evaluate(elementStack);
+        return expression.evaluate(elementStack);
       }
     };
 
     // get only expression from the triple
     Predicate<Triple<Expression, Method, IXMLHandler>> filter
-	= new TransformedPredicate<Triple<Expression, ?, ?>, Expression>()
-	.setTransformer(getGetLeftTransformer(Expression.class))
-	.setPredicate(evaluatePredicate);
+        = new TransformedPredicate<Triple<Expression, ?, ?>, Expression>()
+        .setTransformer(getGetLeftTransformer(Expression.class))
+        .setPredicate(evaluatePredicate);
 
     return select(handlers.get(event), filter);
   }
 
-  protected void callHandlerMethod(int event, Attributes attributes) 
+  protected void callHandlerMethod(int event, Attributes attributes)
       throws IllegalAccessException, IllegalArgumentException,
              InvocationTargetException, SAXException {
 
@@ -373,18 +373,18 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
           = findHandlerMethods(event);
     for (Triple<Expression, Method, IXMLHandler> handler : handlers) {
       switch (event) {
-	case START_ELEMENT_EVENT:
-	  processed = (Boolean)handler.getMiddle()
-	      .invoke(handler.getRight(), attributes);
-	  break;
-	case END_ELEMENT_EVENT:
-	  processed = (Boolean)handler.getMiddle()
-	      .invoke(handler.getRight());
-	  break;
-	case TEXT_EVENT:
-	  processed = (Boolean)handler.getMiddle()
-	      .invoke(handler.getRight(), characterBuffer.toString());
-	  break;
+        case START_ELEMENT_EVENT:
+          processed = (Boolean)handler.getMiddle()
+              .invoke(handler.getRight(), attributes);
+          break;
+        case END_ELEMENT_EVENT:
+          processed = (Boolean)handler.getMiddle()
+              .invoke(handler.getRight());
+          break;
+        case TEXT_EVENT:
+          processed = (Boolean)handler.getMiddle()
+              .invoke(handler.getRight(), characterBuffer.toString());
+          break;
       }
       if (processed) return;
     }
@@ -457,7 +457,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
     forAllDo(handlerObjects,
       new Closure<IXMLHandler>() {
         public void execute(IXMLHandler handler) {
-	  handler.startProcessing();
+          handler.startProcessing();
         }
       }
     );
@@ -497,10 +497,10 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
       try {
         callHandlerMethod(TEXT_EVENT, null);
       } catch (Exception e) {
-	reportException(e);
-	throw new SAXException(e);
+        reportException(e);
+        throw new SAXException(e);
       } finally {
-	characterBuffer.delete(0, characterBuffer.length());
+        characterBuffer.delete(0, characterBuffer.length());
       }
     }
   }
@@ -568,10 +568,10 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
     String delimiter = "";
     for (Pair<String, String> element : elementStack) {
       sb.append(delimiter)
-	.append('{')
-	.append(element.getLeft())
-	.append('}')
-	.append(element.getRight());
+        .append('{')
+        .append(element.getLeft())
+        .append('}')
+        .append(element.getRight());
       delimiter = "/";
     }
   }

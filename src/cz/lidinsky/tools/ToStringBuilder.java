@@ -294,6 +294,8 @@ public class ToStringBuilder {
   protected void appendValue(IToStringBuildable[] value) {
     if (value == null) {
       appendNull();
+    } else if (value.length == 0) {
+      appendEmptyArray();
     } else {
       appendClassName(value.getClass());
       appendHashCode(value);
@@ -309,6 +311,8 @@ public class ToStringBuilder {
   protected void appendValue(Object[] value) {
     if (value == null) {
       appendNull();
+    } else if (value.length == 0) {
+      appendEmptyArray();
     } else {
       appendClassName(value.getClass());
       appendHashCode(value);
@@ -338,6 +342,8 @@ public class ToStringBuilder {
   protected void appendValue(Iterable value) {
     if (value == null) {
       appendNull();
+    } else if (!value.iterator().hasNext()) {
+      appendEmptyCollection();
     } else {
       appendClassName(value.getClass());
       appendHashCode(value);
@@ -388,6 +394,8 @@ public class ToStringBuilder {
   protected void appendValue(String[] value) {
     if (value == null) {
       appendNull();
+    } else if (value.length == 0) {
+      appendEmptyArray();
     } else {
       startArray();
       for (int i = 0; i < getArraySize(value.length); i++) {
@@ -401,6 +409,8 @@ public class ToStringBuilder {
   protected void appendValue(int[] value) {
     if (value == null) {
       appendNull();
+    } else if (value.length == 0) {
+      appendEmptyArray();
     } else {
       startArray();
       for (int i = 0; i < getArraySize(value.length); i++) {
@@ -414,6 +424,8 @@ public class ToStringBuilder {
   protected void appendValue(long[] value) {
     if (value == null) {
       appendNull();
+    } else if (value.length == 0) {
+      appendEmptyArray();
     } else {
       startArray();
       for (int i = 0; i < getArraySize(value.length); i++) {
@@ -427,6 +439,8 @@ public class ToStringBuilder {
   protected void appendValue(boolean[] value) {
     if (value == null) {
       appendNull();
+    } else if (value.length == 0) {
+      appendEmptyArray();
     } else {
       startArray();
       for (int i = 0; i < getArraySize(value.length); i++) {
@@ -440,6 +454,8 @@ public class ToStringBuilder {
   protected void appendValue(float[] value) {
     if (value == null) {
       appendNull();
+    } else if (value.length == 0) {
+      appendEmptyArray();
     } else {
       startArray();
       for (int i = 0; i < getArraySize(value.length); i++) {
@@ -453,6 +469,8 @@ public class ToStringBuilder {
   protected void appendValue(double[] value) {
     if (value == null) {
       appendNull();
+    } else if (value.length == 0) {
+      appendEmptyArray();
     } else {
       startArray();
       for (int i = 0; i < getArraySize(value.length); i++) {
@@ -520,6 +538,14 @@ public class ToStringBuilder {
 
   protected void appendNull() {
     sb.append("<null>");
+  }
+
+  protected void appendEmptyArray() {
+    sb.append("<empty array>");
+  }
+
+  protected void appendEmptyCollection() {
+    sb.append("<empty collection>");
   }
 
   protected void startArray() {

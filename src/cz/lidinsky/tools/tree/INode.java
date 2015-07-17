@@ -23,10 +23,10 @@ import java.util.Collection;
 /**
  *  A node of the tree.
  */
-public interface INode<E extends INode> {
+public interface INode<T> {
 
-  E getParent();
+  T getParent();
 
-  Collection<E> getChildren();
+  Collection<? extends T> getChildren();
 
 }

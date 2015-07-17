@@ -42,7 +42,7 @@ public class DFSIterator<E extends INode<E>> implements Iterator<E> {
     while (!stack.isEmpty()) {
       next = stack.pop();
       if (!discovered.contains(next)) {
-	break;
+        break;
       } else {
         next = null;
       }

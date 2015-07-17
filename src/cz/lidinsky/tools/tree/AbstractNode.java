@@ -21,7 +21,6 @@ package cz.lidinsky.tools.tree;
 import static org.apache.commons.lang3.Validate.notNull;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.collection.UnmodifiableCollection;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,34 +29,47 @@ import java.util.NoSuchElementException;
 /**
  *  A node of the tree.
  */
-public abstract class AbstractNode<F extends AbstractNode> {
+public abstract class AbstractNode<T extends AbstractNode> {
 
-  protected F parent;
+  protected T parent;
 
-  protected ArrayList<F> children;
+  protected ArrayList<T> children;
 
-  public F getParent() {
+  public T getParent() {
     return parent;
   }
 
-  public Collection<F> getChildren() {
-    if (children == null) {
-      return (Collection<F>)CollectionUtils.EMPTY_COLLECTION;
-    } else {
-      return UnmodifiableCollection.unmodifiableCollection(children);
-    }
+  public Collection<T> getChildren() {
+    return CollectionUtils.unmodifiableCollection(
+        CollectionUtils.emptyIfNull(children));
   }
 
-  public void addChild(F node) {
+  public void addChild(T node) {
     notNull(node);
     if (children == null) {
-      children = new ArrayList<F>();
+      children = new ArrayList<T>();
     }
     children.add(node);
     node.parent = this;
   }
 
-  public void removeChild(F node) {
+  public void insertChild(T node, int position) {
+    if (children == null) {
+      children = new ArrayList<T>();
+    }
+    children.add(position, node);
+    node.parent = this;
+  }
+
+  public T getChild(int index) {
+    if (children != null) {
+      return children.get(index);
+    } else {
+      throw new IndexOutOfBoundsException();
+    }
+  }
+
+  public void removeChild(T node) {
     notNull(node);
     if (children == null) {
       throw new NoSuchElementException();
@@ -69,6 +81,22 @@ public abstract class AbstractNode<F extends AbstractNode> {
     }
   }
 
+  public int getIndexOfChild(T node) {
+    if (children != null) {
+      return children.indexOf(node);
+    } else {
+      throw new NoSuchElementException();
+    }
+  }
+
+  public T removeChild(int index) {
+    if (children != null) {
+      return children.remove(index);
+    } else {
+      throw new IndexOutOfBoundsException();
+    }
+  }
+
   public boolean isRoot() {
     return parent == null;
   }
@@ -77,7 +105,11 @@ public abstract class AbstractNode<F extends AbstractNode> {
     return children == null || children.size() == 0;
   }
 
-  public boolean isSibling(F node) {
+  public boolean hasChildren() {
+    return !isLeaf();
+  }
+
+  public boolean isSibling(T node) {
     notNull(node);
     if (node == this) {
       return true; // ???
@@ -88,12 +120,12 @@ public abstract class AbstractNode<F extends AbstractNode> {
     }
   }
 
-  public F getRoot() {
+  public T getRoot() {
     AbstractNode node = this;
     while (node.getParent() != null) {
       node = node.getParent();
     }
-    return (F)node;
+    return (T)node;
   }
 
 }

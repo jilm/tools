@@ -18,7 +18,7 @@ package cz.lidinsky.tools.reflect;
  *  along with java tools library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import static org.apache.commons.lang3.Validate.notNull;
+import static cz.lidinsky.tools.Validate.notNull;
 import static org.apache.commons.lang3.Validate.notBlank;
 import static org.apache.commons.lang3.StringUtils.uncapitalize;
 import static org.apache.commons.lang3.StringUtils.right;
@@ -54,6 +54,9 @@ import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationTargetException;
 
+import cz.lidinsky.tools.CommonException;
+import cz.lidinsky.tools.ExceptionCode;
+
 /**
  *
  *
@@ -67,17 +70,24 @@ public class ObjectMapUtils {
    *  annotated by the given annotation. This predicate is usefull for
    *  getter and setter filters.
    *
+   *  <p>The returned predicate throws CommonException if the input
+   *  parameter is <code>null</null>.
+   *
    *  @param annotation
    *             required annotation class
+   *
+   *  @throws CommonException
+   *             if the <code>anno</code> is <code>null</code>
    */
-  public static Predicate<AccessibleObject> hasAnnotationPredicate(
+  public static Predicate<AnnotatedElement> hasAnnotationPredicate(
       final Class<? extends Annotation> annotation) {
 
-    return new Predicate<AccessibleObject>() {
+    notNull(annotation);
+    return new Predicate<AnnotatedElement>() {
 
-      public boolean evaluate(final AccessibleObject object) {
-        boolean result = object.isAnnotationPresent(annotation);
-        return result;
+      public boolean evaluate(final AnnotatedElement object) {
+        notNull(object);
+        return object.isAnnotationPresent(annotation);
       }
 
     };
@@ -128,7 +138,7 @@ public class ObjectMapUtils {
     };
   }
 
-  //---------------------------------------------------------- Key Transformers
+  //--------------------------------------------------------- Key Transformers.
 
   /**
    *  Returns transformer which takes a Getter annotation of the given object
@@ -178,6 +188,10 @@ public class ObjectMapUtils {
 
   //---------------------------------------------------------- Setter Closures.
 
+  /**
+   *  Returns Setter Closure which takes String as an input and provides
+   *  conversion (parse) to the required datatype.
+   */
   public static Closure<String> stringSetterClosure(
       final Object object,
       final AccessibleObject member,
@@ -202,12 +216,12 @@ public class ObjectMapUtils {
           } else if (dataType == String.class) {
             set(object, member, value, setAccessible);
           } else {
-            throw new IllegalArgumentException();
+            throw new CommonException()
+              .setCode(ExceptionCode.UNSUPPORTED_TYPE);
           }
-        } catch (IllegalAccessException e) {
-          throw new IllegalArgumentException(e);
-        } catch (InvocationTargetException e) {
-          throw new IllegalArgumentException(e);
+        } catch (Exception e) {
+          throw new CommonException()
+            .setCause(e);
         }
       }
     };
@@ -359,18 +373,6 @@ public class ObjectMapUtils {
       public boolean evaluate(final AccessibleObject object) {
         boolean result = object.isAnnotationPresent(annotation);
         return result;
-      }
-    };
-  }
-
-  public static Predicate<AnnotatedElement> getAnnotationPredicate(
-      final Class<? extends Annotation> anno) {
-
-    notNull(anno);
-    return new Predicate<AnnotatedElement>() {
-      public boolean evaluate(final AnnotatedElement object) {
-        notNull(object);
-        return object.isAnnotationPresent(anno);
       }
     };
   }

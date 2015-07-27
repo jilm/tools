@@ -18,15 +18,15 @@
 
 package cz.lidinsky.tools;
 
-public class DescriptiveException extends BaseException {
+public class CommonException extends BaseException {
 
-  public DescriptiveException() {
+  public CommonException() {
     super();
   }
 
   private ExceptionCode code = ExceptionCode.NOT_SPECIFIED;
 
-  public DescriptiveException setCode(ExceptionCode code) {
+  public CommonException setCode(ExceptionCode code) {
     this.code = code;
     return this;
   }

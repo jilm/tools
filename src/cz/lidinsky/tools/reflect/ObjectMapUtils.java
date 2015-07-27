@@ -34,6 +34,7 @@ import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.PredicateUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Set;
 import java.util.Map;
@@ -227,14 +228,20 @@ public class ObjectMapUtils {
     };
   }
 
-  public static Transformer<AccessibleObject, Closure<String>>
-      stringSetterClosureFactory(
-          final Object object,
-          final boolean setAccessible) {
+  /**
+   *  Returns setter closure factory that takes a string parameter and
+   *  converse it to the appriate data type.
+   */
+  public static Transformer<Pair<Object, AccessibleObject>, Closure<String>>
+      stringSetterClosureFactory(final boolean setAccessible) {
 
-    return new Transformer<AccessibleObject, Closure<String>>() {
-      public Closure<String> transform(final AccessibleObject member) {
-        return stringSetterClosure(object, member, setAccessible);
+    return new Transformer<Pair<Object, AccessibleObject>, Closure<String>>() {
+      public Closure<String> transform(
+          final Pair<Object, AccessibleObject> param) {
+
+        Object decorated = param.getLeft();
+        AccessibleObject member = param.getRight();
+        return stringSetterClosure(decorated, member, setAccessible);
       }
     };
   }

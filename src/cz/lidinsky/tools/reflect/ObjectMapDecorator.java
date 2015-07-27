@@ -18,7 +18,7 @@ package cz.lidinsky.tools.reflect;
  *  along with java tools library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import static org.apache.commons.lang3.Validate.notNull;
+import static cz.lidinsky.tools.Validate.notNull;
 import static org.apache.commons.lang3.Validate.notBlank;
 import static org.apache.commons.lang3.StringUtils.uncapitalize;
 import static org.apache.commons.lang3.StringUtils.right;
@@ -34,6 +34,8 @@ import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.PredicateUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.Set;
 import java.util.Map;
@@ -162,7 +164,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
    *  A Transformer (factory), which returns appropriate setter closure
    *  for each setter method of the decorated object.
    */
-  private Transformer<AccessibleObject, Closure<T>> setterFactory;
+  private Transformer<Pair<Object, AccessibleObject>, Closure<T>> setterFactory;
 
   /**
    *  Sets a setter factory. It is the transformer which returns an
@@ -172,7 +174,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
    *  <p>After the new factory is set, the map is actualized.
    */
   public ObjectMapDecorator setSetterFactory(
-      Transformer<AccessibleObject, Closure<T>> factory) {
+      Transformer<Pair<Object, AccessibleObject>, Closure<T>> factory) {
 
     // TODO: default value if null
     setterFactory = factory;
@@ -360,7 +362,8 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
     for (AccessibleObject setter : setters) {
       String key = setterKeyTransformer.transform(setter);
       BufferEntry entry = getBufferEntry(key);
-      entry.setter = setterFactory.transform(setter);
+      entry.setter = setterFactory.transform(
+          new ImmutablePair(decorated, setter));
     }
 
     // select only getter members and place them into the internal buffer

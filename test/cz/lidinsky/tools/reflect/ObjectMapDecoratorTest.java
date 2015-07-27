@@ -46,7 +46,7 @@ public class ObjectMapDecoratorTest {
       .setSetterFilter(ObjectMapUtils.hasAnnotationPredicate(Setter.class))
       .setGetterFilter(null)
       .setSetterFactory(
-          ObjectMapUtils.stringSetterClosureFactory(this, false))
+          ObjectMapUtils.stringSetterClosureFactory(false))
       .setSetterKeyTransformer(ObjectMapUtils.getSetterValueTransformer());
     map.setDecorated(this);
   }

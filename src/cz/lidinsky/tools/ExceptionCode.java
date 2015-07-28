@@ -35,7 +35,8 @@ public enum ExceptionCode {
   CLASS_NOT_FOUND     (ClassNotFoundException.class),
   INSTANTIATION       (InstantiationException.class),
   ILLEGAL_ACCESS      (IllegalAccessException.class),
-  UNSUPPORTED_TYPE    (null);
+  UNSUPPORTED_TYPE    (null),
+  INVOCATION_TARGET   (java.lang.reflect.InvocationTargetException.class);
 
   ExceptionCode(Class<? extends Throwable> e) {
     counterpartException = e;

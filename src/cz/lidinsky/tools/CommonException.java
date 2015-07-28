@@ -21,6 +21,7 @@ package cz.lidinsky.tools;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.lang.reflect.InvocationTargetException;
 
 public class CommonException extends RuntimeException {
 
@@ -66,7 +67,11 @@ public class CommonException extends RuntimeException {
    *  Sets the cause of the exception.
    */
   public CommonException setCause(Throwable cause) {
-    this.cause = cause;
+    if (cause instanceof InvocationTargetException) {
+      this.cause = ((InvocationTargetException)cause).getTargetException();
+    } else {
+      this.cause = cause;
+    }
     return this;
   }
 

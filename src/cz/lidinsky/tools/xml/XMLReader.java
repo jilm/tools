@@ -33,6 +33,7 @@ import static cz.lidinsky.tools.ExceptionUtils.wrapException;
 import cz.lidinsky.tools.functors.TransformedPredicate;
 import cz.lidinsky.tools.IToStringBuildable;
 import cz.lidinsky.tools.ToStringBuilder;
+import cz.lidinsky.tools.CommonException;
 
 import java.io.File;
 import java.io.InputStream;
@@ -310,37 +311,32 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
    *  @throws IOException
    *             if something goes wrong
    */
-  public void load(InputStream inputStream) throws IOException
-  {
-    try
-    {
+  public void load(InputStream inputStream) {
+    try {
       SAXParserFactory factory = SAXParserFactory.newInstance();
       factory.setNamespaceAware(true);
       factory.setXIncludeAware(true);
       SAXParser parser = factory.newSAXParser();
       parser.parse(inputStream, this);
-    }
-    catch (SAXException e)
-    {
-      throw new IOException(e);
-    }
-    catch (ParserConfigurationException e)
-    {
-      throw new IOException(e);
+    } catch (Exception e) {
+      throw new CommonException()
+        .setCause(e)
+        .set("message", "Exception while reading a XML file!");
     }
   }
 
-  public void load(File file) throws IOException {
+  public void load(File file) {
     try {
       SAXParserFactory factory = SAXParserFactory.newInstance();
       factory.setNamespaceAware(true);
       factory.setXIncludeAware(true);
       SAXParser parser = factory.newSAXParser();
       parser.parse(file, this);
-    } catch (SAXException e) {
-      throw new IOException(e);
-    } catch (ParserConfigurationException e) {
-      throw new IOException(e);
+    } catch (Exception e) {
+      throw new CommonException()
+        .setCause(e)
+        .set("message", "Exception while reading a XML file!")
+        .set("file", file);
     }
   }
 
@@ -364,32 +360,39 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
     return select(handlers.get(event), filter);
   }
 
-  protected void callHandlerMethod(int event, Attributes attributes)
-      throws IllegalAccessException, IllegalArgumentException,
-             InvocationTargetException, SAXException {
+  protected void callHandlerMethod(int event, Attributes attributes) {
 
-    boolean processed = false; // indicate that the event was processed
-    Collection<Triple<Expression, Method, IXMLHandler>> handlers
-          = findHandlerMethods(event);
-    for (Triple<Expression, Method, IXMLHandler> handler : handlers) {
-      switch (event) {
-        case START_ELEMENT_EVENT:
-          processed = (Boolean)handler.getMiddle()
-              .invoke(handler.getRight(), attributes);
-          break;
-        case END_ELEMENT_EVENT:
-          processed = (Boolean)handler.getMiddle()
-              .invoke(handler.getRight());
-          break;
-        case TEXT_EVENT:
-          processed = (Boolean)handler.getMiddle()
-              .invoke(handler.getRight(), characterBuffer.toString());
-          break;
+    Method handlerMethod = null;
+    try {
+      boolean processed = false; // indicate that the event was processed
+      Collection<Triple<Expression, Method, IXMLHandler>> handlers
+        = findHandlerMethods(event);
+      for (Triple<Expression, Method, IXMLHandler> handler : handlers) {
+        handlerMethod = handler.getMiddle();
+        switch (event) {
+          case START_ELEMENT_EVENT:
+            processed = (Boolean)handlerMethod.invoke(
+                handler.getRight(), attributes);
+            break;
+          case END_ELEMENT_EVENT:
+            processed = (Boolean)handlerMethod.invoke(handler.getRight());
+            break;
+          case TEXT_EVENT:
+            processed = (Boolean)handlerMethod.invoke(
+                handler.getRight(), characterBuffer.toString());
+            break;
+        }
+        if (processed) return;
       }
-      if (processed) return;
+      reportMissingHandler(EVENT_LABELS[event]);
+      throw new SAXException("Missing handler");
+    } catch (Exception e) {
+      throw new CommonException()
+        .setCause(e)
+        .set("message", "Handler method invocation failed!")
+        .set("event", event)
+        .set("handler method", handlerMethod);
     }
-    reportMissingHandler(EVENT_LABELS[event]);
-    throw new SAXException("Missing handler");
   }
 
   /*
@@ -401,24 +404,30 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
 
   @Override
   public final void startElement(
-      String uri, String localName, String qName, Attributes attributes)
-      throws SAXException {
+      String uri, String localName, String qName, Attributes attributes) {
 
-    // Store location
-    storeLocation();
-
-    // If there is a content in the text buffer
-    fireTextEvent();
-
-    // Store the element name and uri into the element stack
-    elementStack.add(new ImmutablePair<String, String>(uri, localName));
-
-    // Find and call appropriate handler method
     try {
+
+      // Store location
+      storeLocation();
+
+      // If there is a content in the text buffer
+      fireTextEvent();
+
+      // Store the element name and uri into the element stack
+      elementStack.add(new ImmutablePair<String, String>(uri, localName));
+
+      // Find and call appropriate handler method
       callHandlerMethod(START_ELEMENT_EVENT, attributes);
+
     } catch (Exception e) {
-      reportException(e);
-      throw new SAXException(e);
+      throw new CommonException()
+        .setCause(e)
+        .set("message", "Exception while processing Start Element event!")
+        .set("uri", uri)
+        .set("local name", localName)
+        .set("qName", qName)
+        .set("attributes", attributes);
     }
   }
 

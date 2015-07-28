@@ -18,21 +18,120 @@
 
 package cz.lidinsky.tools;
 
-public class CommonException extends BaseException {
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+public class CommonException extends RuntimeException {
 
   public CommonException() {
     super();
   }
 
+  /** Exception code. */
   private ExceptionCode code = ExceptionCode.NOT_SPECIFIED;
 
+  /**
+   *  Sets the exception code.
+   */
   public CommonException setCode(ExceptionCode code) {
     this.code = code;
     return this;
   }
 
+  /**
+   *  Returns the exception code. It is either the code which was set
+   *  by the {@link #setCode} method, or the code which is infered
+   *  from the cause exception.
+   */
   public ExceptionCode getCode() {
+    if (code == ExceptionCode.NOT_SPECIFIED && cause != null) {
+      if (cause instanceof CommonException) {
+        return ((CommonException)cause).getCode();
+      } else {
+        for (ExceptionCode ec : ExceptionCode.values()) {
+          if (ec.getCounterpart() == cause.getClass()) {
+            return ec;
+          }
+        }
+      }
+    }
     return code;
+  }
+
+  /** Cause of the exception. */
+  private Throwable cause;
+
+  /**
+   *  Sets the cause of the exception.
+   */
+  public CommonException setCause(Throwable cause) {
+    this.cause = cause;
+    return this;
+  }
+
+  /** Additional information. */
+  protected HashMap<String, String> fields = new HashMap<String, String>();
+
+  /**
+   *  Allows to attache additional information, mainly conditions that
+   *  could be important to find out what is going on.
+   */
+  public CommonException set(String key, String value) {
+    if (key != null) {
+      if (value != null) {
+        fields.put(key, value);
+      } else {
+        fields.put(key, "<null>");
+      }
+    }
+    return this;
+  }
+
+  public CommonException set(String key, int value) {
+    if (key != null) {
+      fields.put(key, Integer.valueOf(value).toString());
+    }
+    return this;
+  }
+
+  public CommonException set(String key, Object value) {
+    if (key != null) {
+      if (value != null) {
+        fields.put(key, value.toString());
+      } else {
+        fields.put(key, "<null>");
+      }
+    }
+    return this;
+  }
+
+  public String getMessage() {
+    // header
+    StringBuilder sb = new StringBuilder()
+      .append("EXCEPTION ! Exception Code: ")
+      .append(getCode());
+    // additional information
+    Set<Map.Entry<String, String>> entries = fields.entrySet();
+    for (Map.Entry<String, String> entry : entries) {
+      sb.append("\n")
+        .append(entry.getKey())
+        .append(", ")
+        .append(entry.getValue());
+    }
+    // stack information
+    if (getStackTrace().length > 0) {
+      sb.append("\nClass Name: ")
+        .append(getStackTrace()[0].getClassName())
+        .append("\nMethod Name: ")
+        .append(getStackTrace()[0].getMethodName());
+    }
+    // cause
+    if (cause != null) {
+      sb.append("\nCause:\n")
+        .append(cause.getMessage());
+    }
+    return sb.toString();
   }
 
 }

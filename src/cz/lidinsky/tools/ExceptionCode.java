@@ -19,20 +19,32 @@
 package cz.lidinsky.tools;
 
 public enum ExceptionCode {
-  NOT_SPECIFIED,
-  ILLEGAL_ARGUMENT,
-  NULL_ARGUMENT,
-  NULL_POINTER,
-  BLANK_ARGUMENT,
-  INDEX_OUT_OF_BOUNDS,
-  DUPLICATE_ELEMENT,
-  NO_SUCH_ELEMENT,
-  ILLEGAL_STATE,
-  PARSE,
-  CYCLIC_DEFINITION,
-  CLASS_CAST,
-  CLASS_NOT_FOUND,
-  INSTANTIATION,
-  ILLEGAL_ACCESS,
-  UNSUPPORTED_TYPE
+
+  NOT_SPECIFIED       (null),
+  ILLEGAL_ARGUMENT    (IllegalArgumentException.class),
+  NULL_ARGUMENT       (NullPointerException.class),
+  NULL_POINTER        (NullPointerException.class),
+  BLANK_ARGUMENT      (IllegalArgumentException.class),
+  INDEX_OUT_OF_BOUNDS (IndexOutOfBoundsException.class),
+  DUPLICATE_ELEMENT   (null),
+  NO_SUCH_ELEMENT     (java.util.NoSuchElementException.class),
+  ILLEGAL_STATE       (IllegalStateException.class),
+  PARSE               (null),
+  CYCLIC_DEFINITION   (null),
+  CLASS_CAST          (ClassCastException.class),
+  CLASS_NOT_FOUND     (ClassNotFoundException.class),
+  INSTANTIATION       (InstantiationException.class),
+  ILLEGAL_ACCESS      (IllegalAccessException.class),
+  UNSUPPORTED_TYPE    (null);
+
+  ExceptionCode(Class<? extends Throwable> e) {
+    counterpartException = e;
+  }
+
+  private Class<? extends Throwable> counterpartException;
+
+  public Class<? extends Throwable> getCounterpart() {
+    return counterpartException;
+  }
+
 }

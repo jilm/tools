@@ -31,13 +31,14 @@ import java.util.NoSuchElementException;
  */
 public class ChangeableNode<T> extends Node<T> {
 
-  public void addChild(Node<T> node) {
+  public Node<T> addChild(final Node<T> node) {
     notNull(node);
     if (children == null) {
       children = new ArrayList<Node<T>>();
     }
     children.add(node);
     node.parent = this;
+    return node;
   }
 
   public void insertChild(Node<T> node, int position) {

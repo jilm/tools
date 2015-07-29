@@ -67,10 +67,9 @@ public class CommonException extends RuntimeException {
    *  Sets the cause of the exception.
    */
   public CommonException setCause(Throwable cause) {
-    if (cause instanceof InvocationTargetException) {
-      this.cause = ((InvocationTargetException)cause).getTargetException();
-    } else {
-      this.cause = cause;
+    this.cause = cause;
+    while (this.cause instanceof InvocationTargetException) {
+      this.cause = ((InvocationTargetException)this.cause).getTargetException();
     }
     return this;
   }

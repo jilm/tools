@@ -200,32 +200,47 @@ public class ObjectMapUtils {
 
     notNull(member);
     final Class dataType = getValueDataType(member);
-
-    return new Closure<String>() {
-      public void execute(String value) {
-        try {
-          if (dataType == int.class || dataType == Integer.class) {
-            set(object, member, Integer.parseInt(value), setAccessible);
-          } else if (dataType == long.class || dataType == Long.class) {
-            set(object, member, Long.parseLong(value), setAccessible);
-          } else if (dataType == float.class || dataType == Float.class) {
-            set(object, member, Float.parseFloat(value), setAccessible);
-          } else if (dataType == double.class || dataType == Double.class) {
-            set(object, member, Double.parseDouble(value), setAccessible);
-          } else if (dataType == boolean.class || dataType == Boolean.class) {
-            set(object, member, Boolean.parseBoolean(value), setAccessible);
-          } else if (dataType == String.class) {
-            set(object, member, value, setAccessible);
-          } else {
-            throw new CommonException()
-              .setCode(ExceptionCode.UNSUPPORTED_TYPE);
-          }
-        } catch (Exception e) {
-          throw new CommonException()
-            .setCause(e);
+    if (dataType == int.class || dataType == Integer.class) {
+      return new Closure<String>() {
+        public void execute(String value) {
+          set(object, member, Integer.parseInt(value), setAccessible);
         }
-      }
-    };
+      };
+    } else if (dataType == long.class || dataType == Long.class) {
+      return new Closure<String>() {
+        public void execute(String value) {
+          set(object, member, Long.parseLong(value), setAccessible);
+        }
+      };
+    } else if (dataType == float.class || dataType == Float.class) {
+      return new Closure<String>() {
+        public void execute(String value) {
+          set(object, member, Float.parseFloat(value), setAccessible);
+        }
+      };
+    } else if (dataType == double.class || dataType == Double.class) {
+      return new Closure<String>() {
+        public void execute(String value) {
+          set(object, member, Double.parseDouble(value), setAccessible);
+        }
+      };
+    } else if (dataType == boolean.class || dataType == Boolean.class) {
+      return new Closure<String>() {
+        public void execute(String value) {
+          set(object, member, Boolean.parseBoolean(value), setAccessible);
+        }
+      };
+    } else if (dataType == String.class) {
+      return new Closure<String>() {
+        public void execute(String value) {
+          set(object, member, value, setAccessible);
+        }
+      };
+    } else {
+      throw new CommonException()
+        .setCode(ExceptionCode.UNSUPPORTED_TYPE)
+        .set("data type", dataType);
+    }
   }
 
   /**
@@ -246,7 +261,7 @@ public class ObjectMapUtils {
     };
   }
 
-  private static Class getValueDataType(final AccessibleObject member) {
+  public static Class getValueDataType(final AccessibleObject member) {
     if (member instanceof Field) {
       return ((Field)member).getType();
     } else if (member instanceof Method) {
@@ -268,13 +283,7 @@ public class ObjectMapUtils {
     notNull(member);
     return new Closure<T>() {
       public void execute(T value) {
-        try {
-          set(object, member, value, setAccessible);
-        } catch (IllegalAccessException e) {
-          throw new IllegalArgumentException(e);
-        } catch (InvocationTargetException e) {
-          throw new IllegalArgumentException(e);
-        }
+        set(object, member, value, setAccessible);
       }
     };
   }
@@ -297,18 +306,30 @@ public class ObjectMapUtils {
       final Object object,
       final AccessibleObject member,
       final T value,
-      final boolean setAccessible)
-      throws IllegalAccessException, InvocationTargetException {
+      final boolean setAccessible) {
 
-    notNull(member);
-    if (member instanceof Field) {
-      member.setAccessible(setAccessible);
-      ((Field)member).set(object, value);
-    } else if (member instanceof Method) {
-      member.setAccessible(setAccessible);
-      ((Method)member).invoke(object, value);
-    } else {
-      throw new IllegalArgumentException(); // TODO:
+    try {
+      notNull(member);
+      if (member instanceof Field) {
+        member.setAccessible(setAccessible);
+        ((Field)member).set(object, value);
+      } else if (member instanceof Method) {
+        member.setAccessible(setAccessible);
+        ((Method)member).invoke(object, value);
+      } else {
+        throw new CommonException()
+          .setCode(ExceptionCode.UNSUPPORTED_TYPE)
+          .set("message",
+              "Only fields and methods are supported as a setters!");
+      }
+    } catch (Exception e) {
+      throw new CommonException()
+        .setCause(e)
+        .set("message", "Exception while trying to invoke a setter!")
+        .set("object", object)
+        .set("member", member)
+        .set("value", value)
+        .set("accessibility", setAccessible);
     }
   }
 
@@ -316,21 +337,29 @@ public class ObjectMapUtils {
       final Object object,
       final String key,
       final T value,
-      final boolean setAccessible)
-      throws IllegalAccessException, InvocationTargetException {
+      final boolean setAccessible) {
 
-    Collection<? extends AccessibleObject> members = CollectionUtils.union(
-        getMethods(object.getClass()), getFields(object.getClass()));
-    Predicate<AccessibleObject> filter = PredicateUtils.allPredicate(
-        getSetterSignatureCheckPredicate(),
-        hasSetterKeyPredicate(key));
-    List<AccessibleObject> setters = ListUtils.select(members, filter);
-    Collections.sort(setters, Collections.reverseOrder(getComparator()));
-    if (setters.size() == 0) {
-      throw new NoSuchElementException();
+    try {
+      Collection<? extends AccessibleObject> members = CollectionUtils.union(
+          getMethods(object.getClass()), getFields(object.getClass()));
+      Predicate<AccessibleObject> filter = PredicateUtils.allPredicate(
+          getSetterSignatureCheckPredicate(),
+          hasSetterKeyPredicate(key));
+      List<AccessibleObject> setters = ListUtils.select(members, filter);
+      Collections.sort(setters, Collections.reverseOrder(getComparator()));
+      if (setters.size() == 0) {
+        throw new NoSuchElementException();
+      }
+      AccessibleObject setter = setters.get(0);
+      set(object, setter, value, setAccessible);
+    } catch (Exception e) {
+      throw new CommonException()
+        .setCause(e)
+        .set("message", "Exception while trying to invoke a setter!")
+        .set("object", object)
+        .set("value", value)
+        .set("accessibility", setAccessible);
     }
-    AccessibleObject setter = setters.get(0);
-    set(object, setter, value, setAccessible);
   }
 
   //----------------------------------------------------------------- To Remove

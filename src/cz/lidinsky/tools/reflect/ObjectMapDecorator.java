@@ -461,6 +461,8 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
       entry.dataType = ObjectMapUtils.getValueDataType(getter);
     }
 
+    dirty = false;
+
   }
 
   //-------------------------------------------------------- Auxiliary Methods.

@@ -310,6 +310,78 @@ public class ObjectMapUtils {
     };
   }
 
+  //--------------------------------------------------------- Getter Factories.
+
+  /**
+   *  Basic getter factory.
+   */
+  public static <T> Transformer<Pair<Object, AccessibleObject>, Factory<T>>
+    getterFactory(final boolean setAccessible) {
+
+      return new Transformer<Pair<Object, AccessibleObject>, Factory<T>>() {
+
+        public Factory<T> transform(Pair<Object, AccessibleObject> param) {
+
+          final Object object = param.getLeft();
+          final AccessibleObject member = param.getRight();
+
+          return new Factory<T>() {
+
+            public T create() {
+              try {
+                return get(object, member, setAccessible);
+              } catch (Exception e) {
+                throw new CommonException()
+                  .setCause(e)
+                  .set("message", "Exception while reading from a getter!")
+                  .set("object", object)
+                  .set("member", member)
+                  .set("accessibility", setAccessible);
+              }
+            }
+          };
+        }
+      };
+    }
+
+  /**
+   *  Getter factory which convert the value into the string.
+   */
+  public static Transformer<Pair<Object, AccessibleObject>, Factory<String>>
+    stringGetterFactory(final boolean setAccessible) {
+
+      return new
+        Transformer<Pair<Object, AccessibleObject>, Factory<String>>() {
+
+        public Factory<String> transform(Pair<Object, AccessibleObject> param) {
+
+          final Object object = param.getLeft();
+          final AccessibleObject member = param.getRight();
+
+          return new Factory<String>() {
+
+            public String create() {
+              try {
+                Object rawValue = get(object, member, setAccessible);
+                if (rawValue == null) {
+                  return "<null>";
+                } else {
+                  return rawValue.toString();
+                }
+              } catch (Exception e) {
+                throw new CommonException()
+                  .setCause(e)
+                  .set("message", "Exception while reading from a getter!")
+                  .set("object", object)
+                  .set("member", member)
+                  .set("accessibility", setAccessible);
+              }
+            }
+          };
+        }
+      };
+    }
+
   //-------------------------------------------------------- Auxiliary Methods.
 
   public static <T> void set(
@@ -557,38 +629,6 @@ public class ObjectMapUtils {
     AccessibleObject getter = getters.get(0);
     return get(object, getter, setAccessible);
   }
-
-  /**
-   *
-   */
-  public static <T> Transformer<Pair<Object, AccessibleObject>, Factory<T>>
-    getterFactory(final boolean setAccessible) {
-
-      return new Transformer<Pair<Object, AccessibleObject>, Factory<T>>() {
-
-        public Factory<T> transform(Pair<Object, AccessibleObject> param) {
-
-          final Object object = param.getLeft();
-          final AccessibleObject member = param.getRight();
-
-          return new Factory<T>() {
-
-            public T create() {
-              try {
-                return get(object, member, setAccessible);
-              } catch (Exception e) {
-                throw new CommonException()
-                  .setCause(e)
-                  .set("message", "Exception while reading from a getter!")
-                  .set("object", object)
-                  .set("member", member)
-                  .set("accessibility", setAccessible);
-              }
-            }
-          };
-        }
-      };
-    }
 
   /**
    *  Returns methods of the given class.

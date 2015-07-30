@@ -187,6 +187,16 @@ public class ObjectMapUtils {
       };
     }
 
+  public static Transformer<AccessibleObject, String> keyFromName() {
+
+    return new Transformer<AccessibleObject, String>() {
+
+      public String transform(AccessibleObject object) {
+        return getKeyFromName(object);
+      }
+    };
+  }
+
   //---------------------------------------------------------- Setter Closures.
 
   /**
@@ -288,14 +298,14 @@ public class ObjectMapUtils {
     };
   }
 
-  public static <T> Transformer<AccessibleObject, Closure<T>>
-      getSetterClosureFactory(
-          final Object object,
-          final boolean setAccessible) {
+  public static <T> Transformer<Pair<Object, AccessibleObject>, Closure<T>>
+      setterClosureFactory(final boolean setAccessible) {
 
-    return new Transformer<AccessibleObject, Closure<T>>() {
-      public Closure<T> transform(final AccessibleObject member) {
-        return getSetterClosure(object, member, setAccessible);
+    return new Transformer<Pair<Object, AccessibleObject>, Closure<T>>() {
+      public Closure<T> transform(final Pair<Object, AccessibleObject> param) {
+        Object decorated = param.getLeft();
+        AccessibleObject member = param.getRight();
+        return getSetterClosure(decorated, member, setAccessible);
       }
     };
   }
@@ -548,24 +558,37 @@ public class ObjectMapUtils {
     return get(object, getter, setAccessible);
   }
 
-  public static <T> Factory<T> getGetterFactory(
-      final Object object,
-      final AccessibleObject member,
-      final boolean setAccessible) {
+  /**
+   *
+   */
+  public static <T> Transformer<Pair<Object, AccessibleObject>, Factory<T>>
+    getterFactory(final boolean setAccessible) {
 
-    notNull(member);
-    return new Factory<T>() {
-      public T create() {
-        try {
-          return get(object, member, setAccessible);
-        } catch (IllegalAccessException e) {
-          throw new IllegalArgumentException(e);
-        } catch (InvocationTargetException e) {
-          throw new IllegalArgumentException(e);
+      return new Transformer<Pair<Object, AccessibleObject>, Factory<T>>() {
+
+        public Factory<T> transform(Pair<Object, AccessibleObject> param) {
+
+          final Object object = param.getLeft();
+          final AccessibleObject member = param.getRight();
+
+          return new Factory<T>() {
+
+            public T create() {
+              try {
+                return get(object, member, setAccessible);
+              } catch (Exception e) {
+                throw new CommonException()
+                  .setCause(e)
+                  .set("message", "Exception while reading from a getter!")
+                  .set("object", object)
+                  .set("member", member)
+                  .set("accessibility", setAccessible);
+              }
+            }
+          };
         }
-      }
-    };
-  }
+      };
+    }
 
   /**
    *  Returns methods of the given class.

@@ -36,6 +36,7 @@ public enum ExceptionCode {
   INSTANTIATION       (InstantiationException.class),
   ILLEGAL_ACCESS      (IllegalAccessException.class),
   UNSUPPORTED_TYPE    (null),
+  ACCESS_DENIED       (null),
   INVOCATION_TARGET   (java.lang.reflect.InvocationTargetException.class);
 
   ExceptionCode(Class<? extends Throwable> e) {

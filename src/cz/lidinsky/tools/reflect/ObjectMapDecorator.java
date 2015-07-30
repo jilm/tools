@@ -26,6 +26,9 @@ import static org.apache.commons.lang3.StringUtils.startsWith;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.collections4.CollectionUtils.addAll;
 
+import cz.lidinsky.tools.CommonException;
+import cz.lidinsky.tools.ExceptionCode;
+
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.collections4.Transformer;
 import org.apache.commons.collections4.Factory;
@@ -76,11 +79,14 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
   protected HashMap<String, BufferEntry> buffer
                    = new HashMap<String, BufferEntry>();
 
-
   public ObjectMapDecorator(Class<T> valueClass) {
     //this.valueClass = valueClass;
     getterFilter = ObjectMapUtils.getGetterSignatureCheckPredicate();
     setterFilter = ObjectMapUtils.getSetterSignatureCheckPredicate();
+    setSetterFactory(null);
+    setGetterFactory(null);
+    setGetterKeyTransformer(null);
+    setSetterKeyTransformer(null);
   }
 
   //--------------------------------------------------------- Decorated Object.
@@ -100,8 +106,10 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
    *             the map interface. May be <code>null</code> value.
    */
   public void setDecorated(Object object) {
-    this.decorated = object;
-    dirty = true;
+    if (object != this.decorated) {
+      this.decorated = object;
+      dirty = true;
+    }
   }
 
   //--------------------------------------------------------------- Parameters.
@@ -154,7 +162,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
     if (filter == null) {
       getterFilter = PredicateUtils.falsePredicate();
     } else {
-      getterFilter = notNull(filter);
+      getterFilter = filter;
     }
     dirty = true;
     return this;
@@ -176,17 +184,25 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
   public ObjectMapDecorator setSetterFactory(
       Transformer<Pair<Object, AccessibleObject>, Closure<T>> factory) {
 
-    // TODO: default value if null
-    setterFactory = factory;
+    if (factory == null) {
+      setterFactory = ObjectMapUtils.setterClosureFactory(false);
+    } else {
+      setterFactory = factory;
+    }
     dirty = true;
     return this;
   }
 
-  private Factory<T> getterFactory;
+  private Transformer<Pair<Object, AccessibleObject>, Factory<T>> getterFactory;
 
-  public ObjectMapDecorator setGetterFacotry(Factory<T> factory) {
-    // TODO: default value if null
-    getterFactory = factory;
+  public ObjectMapDecorator setGetterFactory(
+      Transformer<Pair<Object, AccessibleObject>, Factory<T>> factory) {
+
+    if (factory == null) {
+      getterFactory = ObjectMapUtils.getterFactory(false);
+    } else {
+      getterFactory = factory;
+    }
     dirty = true;
     return this;
   }
@@ -196,8 +212,11 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
   public ObjectMapDecorator setGetterKeyTransformer(
       Transformer<AccessibleObject, String> keyTransformer) {
 
-    // TODO: default value if null
-    getterKeyTransformer = keyTransformer;
+    if (keyTransformer == null) {
+      getterKeyTransformer = ObjectMapUtils.keyFromName();
+    } else {
+      getterKeyTransformer = keyTransformer;
+    }
     dirty = true;
     return this;
   }
@@ -207,8 +226,11 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
   public ObjectMapDecorator setSetterKeyTransformer(
       Transformer<AccessibleObject, String> keyTransformer) {
 
-    // TODO: default value if null
-    setterKeyTransformer = keyTransformer;
+    if (keyTransformer == null) {
+      setterKeyTransformer = ObjectMapUtils.keyFromName();
+    } else {
+      setterKeyTransformer = keyTransformer;
+    }
     dirty = true;
     return this;
   }
@@ -248,16 +270,31 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
   }
 
   public T put(String key, T value) {
-    scan();
-    BufferEntry entry = buffer.get(key);
-    if (entry == null) {
-      throw new IllegalArgumentException("Given key was not found! " + key);
-    } else if (!entry.isWritable()) {
-      throw new IllegalArgumentException("Given key is not writable! " + key);
-    } else {
-      T oldValue = entry.getValue();
-      entry.setValue(value);
-      return oldValue;
+    try {
+      scan();
+      BufferEntry entry = buffer.get(key);
+      if (entry == null) {
+        throw new CommonException()
+          .setCode(ExceptionCode.NO_SUCH_ELEMENT)
+          .set("message", "An object doesn't have a member with given key!");
+      } else if (!entry.isWritable()) {
+        throw new CommonException()
+          .setCode(ExceptionCode.ACCESS_DENIED)
+          .set("message",
+              "You are trying to write the key that is not writable!");
+      } else {
+        T oldValue = entry.getValue();
+        entry.setValue(value);
+        return oldValue;
+      }
+    } catch (Exception e) {
+      throw new CommonException()
+        .setCause(e)
+        .set("message",
+            "An exception while setting the item of the object map!")
+        .set("key", key)
+        .set("value", value)
+        .set("object", decorated);
     }
   }
 
@@ -305,12 +342,54 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
     return 0;
   }
 
+  //-------------------------------------------------------------------- Other.
+
+  public boolean isWritable(String key) {
+    BufferEntry entry = buffer.get(key);
+    if (entry != null) {
+      return entry.isWritable();
+    } else {
+      throw new CommonException()
+        .setCode(ExceptionCode.NO_SUCH_ELEMENT)
+        .set("message", "There is no item with required key!")
+        .set("key", key)
+        .set("object", getDecorated());
+    }
+  }
+
+  public boolean isReadable(String key) {
+    BufferEntry entry = buffer.get(key);
+    if (entry != null) {
+      return entry.isReadable();
+    } else {
+      throw new CommonException()
+        .setCode(ExceptionCode.NO_SUCH_ELEMENT)
+        .set("message", "There is no item with required key!")
+        .set("key", key)
+        .set("object", getDecorated());
+    }
+  }
+
+  public Class<?> getDataType(String key) {
+    BufferEntry entry = buffer.get(key);
+    if (entry != null) {
+      return entry.dataType;
+    } else {
+      throw new CommonException()
+        .setCode(ExceptionCode.NO_SUCH_ELEMENT)
+        .set("message", "There is no item with required key!")
+        .set("key", key)
+        .set("object", getDecorated());
+    }
+  }
+
   //---------------------------------------------------------- Internal Buffer.
 
   protected class BufferEntry {
 
     Factory<T> getter;
     Closure<T> setter;
+    Class<?> dataType;
 
     boolean isReadable() {
       return getter != null;
@@ -322,7 +401,9 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
 
     T getValue() {
       if (getter == null) {
-        return null; // TODO:
+        throw new CommonException()
+          .setCode(ExceptionCode.ACCESS_DENIED)
+          .set("message", "Value is not Readable!");
       } else {
         return getter.create();
       }
@@ -330,7 +411,9 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
 
     void setValue(T value) {
       if (setter == null) {
-        // TODO:
+        throw new CommonException()
+          .setCode(ExceptionCode.ACCESS_DENIED)
+          .set("message", "Value is not writable!");
       } else {
         setter.execute(value);
       }
@@ -364,6 +447,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
       BufferEntry entry = getBufferEntry(key);
       entry.setter = setterFactory.transform(
           new ImmutablePair(decorated, setter));
+      entry.dataType = ObjectMapUtils.getValueDataType(setter);
     }
 
     // select only getter members and place them into the internal buffer
@@ -372,7 +456,9 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
     for (AccessibleObject getter : getters) {
       String key = getterKeyTransformer.transform(getter);
       BufferEntry entry = getBufferEntry(key);
-      entry.getter = getterFactory;
+      entry.getter = getterFactory.transform(
+          new ImmutablePair(decorated, getter));
+      entry.dataType = ObjectMapUtils.getValueDataType(getter);
     }
 
   }

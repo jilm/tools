@@ -44,10 +44,13 @@ public class ObjectMapDecoratorTest {
   public void init() throws Exception {
     map = new ObjectMapDecorator<String>(String.class)
       .setSetterFilter(ObjectMapUtils.hasAnnotationPredicate(Setter.class))
-      .setGetterFilter(null)
+      .setGetterFilter(ObjectMapUtils.hasAnnotationPredicate(Getter.class))
       .setSetterFactory(
           ObjectMapUtils.stringSetterClosureFactory(false))
-      .setSetterKeyTransformer(ObjectMapUtils.getSetterValueTransformer());
+      .setGetterFactory(
+          ObjectMapUtils.getterFactory(false))
+      .setSetterKeyTransformer(ObjectMapUtils.getSetterValueTransformer())
+      .setGetterKeyTransformer(ObjectMapUtils.getGetterValueTransformer());
     map.setDecorated(this);
   }
 
@@ -58,5 +61,16 @@ public class ObjectMapDecoratorTest {
     map.put("int-value", "67");
     assertEquals(67, intValue);
   }
+
+  @Test
+    public void test2() {
+      assertEquals(intValue, map.get("int-value"));
+    }
+
+  @Test
+    public void test3() {
+      map.setDecorated(null);
+      assertEquals(0, map.size());
+    }
 
 }

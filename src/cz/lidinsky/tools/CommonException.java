@@ -132,7 +132,9 @@ public class CommonException extends RuntimeException {
     }
     // cause
     if (cause != null) {
-      sb.append("\nCause:\n")
+      sb.append("\nCause: ")
+        .append(cause.getClass().getName())
+        .append("\n")
         .append(cause.getMessage());
     }
     return sb.toString();

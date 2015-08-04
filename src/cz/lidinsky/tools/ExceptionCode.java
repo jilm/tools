@@ -20,24 +20,25 @@ package cz.lidinsky.tools;
 
 public enum ExceptionCode {
 
-  NOT_SPECIFIED       (null),
-  ILLEGAL_ARGUMENT    (IllegalArgumentException.class),
-  NULL_ARGUMENT       (NullPointerException.class),
-  NULL_POINTER        (NullPointerException.class),
+  ACCESS_DENIED       (null),
   BLANK_ARGUMENT      (IllegalArgumentException.class),
-  INDEX_OUT_OF_BOUNDS (IndexOutOfBoundsException.class),
-  DUPLICATE_ELEMENT   (null),
-  NO_SUCH_ELEMENT     (java.util.NoSuchElementException.class),
-  ILLEGAL_STATE       (IllegalStateException.class),
-  PARSE               (null),
-  CYCLIC_DEFINITION   (null),
   CLASS_CAST          (ClassCastException.class),
   CLASS_NOT_FOUND     (ClassNotFoundException.class),
-  INSTANTIATION       (InstantiationException.class),
+  CYCLIC_DEFINITION   (null),
+  DUPLICATE_ELEMENT   (null),
   ILLEGAL_ACCESS      (IllegalAccessException.class),
+  ILLEGAL_ARGUMENT    (IllegalArgumentException.class),
+  ILLEGAL_STATE       (IllegalStateException.class),
+  INDEX_OUT_OF_BOUNDS (IndexOutOfBoundsException.class),
+  INSTANTIATION       (InstantiationException.class),
+  INVOCATION_TARGET   (java.lang.reflect.InvocationTargetException.class),
+  NO_SUCH_ELEMENT     (java.util.NoSuchElementException.class),
+  NOT_SPECIFIED       (null),
+  NULL_ARGUMENT       (NullPointerException.class),
+  NULL_POINTER        (NullPointerException.class),
+  PARSE               (null),
   UNSUPPORTED_TYPE    (null),
-  ACCESS_DENIED       (null),
-  INVOCATION_TARGET   (java.lang.reflect.InvocationTargetException.class);
+  UNSUPPORTED_OPERATION (UnsupportedOperationException.class);
 
   ExceptionCode(Class<? extends Throwable> e) {
     counterpartException = e;

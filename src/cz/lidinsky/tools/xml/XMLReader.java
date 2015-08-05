@@ -479,7 +479,14 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
   public final void endDocument() {
     //handlerStack.handler.endProcessing();
     storeLocation();
-  }
+    forAllDo(handlerObjects,
+        new Closure<IXMLHandler>() {
+          public void execute(IXMLHandler handler) {
+            handler.endProcessing();
+          }
+        }
+      );
+    }
 
   /**
    *  Stores a locator for future use.

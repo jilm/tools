@@ -283,7 +283,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
           .set("message",
               "You are trying to write the key that is not writable!");
       } else {
-        T oldValue = entry.getValue();
+        T oldValue = entry.isReadable() ? entry.getValue() : entry.value;
         entry.setValue(value);
         return oldValue;
       }
@@ -345,6 +345,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
   //-------------------------------------------------------------------- Other.
 
   public boolean isWritable(String key) {
+    scan();
     BufferEntry entry = buffer.get(key);
     if (entry != null) {
       return entry.isWritable();
@@ -358,6 +359,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
   }
 
   public boolean isReadable(String key) {
+    scan();
     BufferEntry entry = buffer.get(key);
     if (entry != null) {
       return entry.isReadable();
@@ -371,9 +373,24 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
   }
 
   public Class<?> getDataType(String key) {
+    scan();
     BufferEntry entry = buffer.get(key);
     if (entry != null) {
       return entry.dataType;
+    } else {
+      throw new CommonException()
+        .setCode(ExceptionCode.NO_SUCH_ELEMENT)
+        .set("message", "There is no item with required key!")
+        .set("key", key)
+        .set("object", getDecorated());
+    }
+  }
+
+  public Closure<T> getSetter(String key) {
+    scan();
+    BufferEntry entry = buffer.get(key);
+    if (entry != null) {
+      return entry.setter;
     } else {
       throw new CommonException()
         .setCode(ExceptionCode.NO_SUCH_ELEMENT)
@@ -390,6 +407,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
     Factory<T> getter;
     Closure<T> setter;
     Class<?> dataType;
+    T value;
 
     boolean isReadable() {
       return getter != null;
@@ -416,6 +434,7 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
           .set("message", "Value is not writable!");
       } else {
         setter.execute(value);
+        this.value = value;
       }
     }
 
@@ -442,12 +461,15 @@ public class ObjectMapDecorator<T> implements Map<String, T> {
     // select only setter members and place them into the internal buffer
     List<AccessibleObject> setters = ListUtils.select(members, setterFilter);
     Collections.sort(setters, ObjectMapUtils.getComparator());
+    System.out.println("setters are: ");
     for (AccessibleObject setter : setters) {
       String key = setterKeyTransformer.transform(setter);
+      System.out.print(key + " ");
       BufferEntry entry = getBufferEntry(key);
       entry.setter = setterFactory.transform(
           new ImmutablePair(decorated, setter));
       entry.dataType = ObjectMapUtils.getValueDataType(setter);
+      System.out.println();
     }
 
     // select only getter members and place them into the internal buffer

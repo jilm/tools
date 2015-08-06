@@ -18,6 +18,8 @@
 
 package cz.lidinsky.tools;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 public class Validate {
 
   public static <T> T notNull(T object) {
@@ -27,6 +29,25 @@ public class Validate {
     } else {
       return object;
     }
+  }
+
+  public static <T> T notNull(T object, T def) {
+    return object == null ? def : object;
+  }
+
+  public static String notBlank(String object) {
+    if (isBlank(object)) {
+      throw new CommonException()
+        .setCode(ExceptionCode.BLANK_ARGUMENT)
+        .set("message", "The argument is blank!")
+        .set("argument", object);
+    } else {
+      return object;
+    }
+  }
+
+  public static String notBlank(String object, String def) {
+    return isBlank(object) ? def : object;
   }
 
 }

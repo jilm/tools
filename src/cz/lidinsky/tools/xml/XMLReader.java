@@ -34,6 +34,7 @@ import cz.lidinsky.tools.functors.TransformedPredicate;
 import cz.lidinsky.tools.IToStringBuildable;
 import cz.lidinsky.tools.ToStringBuilder;
 import cz.lidinsky.tools.CommonException;
+import cz.lidinsky.tools.ExceptionCode;
 
 import java.io.File;
 import java.io.InputStream;
@@ -224,6 +225,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
       for (Method method : methods) {
         Annotation annotation = method.getAnnotation(annotationClass);
         String annotationValue = getAnnotationValue(annotation);
+        System.out.println(annotationValue);
         handlers.get(i).add(
             new ImmutableTriple(
         	new Expression().parse(annotationValue, defaultUri),
@@ -385,7 +387,10 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
         if (processed) return;
       }
       reportMissingHandler(EVENT_LABELS[event]);
-      throw new SAXException("Missing handler");
+      throw new CommonException()
+        .setCode(ExceptionCode.NO_SUCH_ELEMENT)
+        .set("message", "Missing handler!")
+        .set("handlers", handlers);
     } catch (Exception e) {
       throw new CommonException()
         .setCause(e)

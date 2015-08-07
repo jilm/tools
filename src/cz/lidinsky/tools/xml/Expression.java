@@ -48,14 +48,14 @@ public class Expression implements Comparator<Expression> {
     expression = expression.replace("{", "`");
     expression = expression.replace("}", "}`");
     StrTokenizer tokens
-	= new StrTokenizer(expression, charMatcher('/'), charMatcher('`'));
+        = new StrTokenizer(expression, charMatcher('/'), charMatcher('`'));
     tokens.setIgnoreEmptyTokens(false);
     tokens.setEmptyTokenAsNull(true);
     for (String token : asIterable(tokens)) {
       if (token == null) {
-	path.add(null);
+        path.add(null);
       } else {
-	path.add(parseUriElementName(token, defaultUri));
+        path.add(parseUriElementName(token, defaultUri));
       }
     }
     if (path.get(0) == null) {
@@ -91,20 +91,20 @@ public class Expression implements Comparator<Expression> {
 
     while (pathIndex >= 0 && contextIndex >= 0) {
       if (path.get(pathIndex) != null) {
-	if (equals(path.get(pathIndex), context.get(contextIndex))) {
-	  pathIndex--;
-	  contextIndex--;
-	} else {
-	  return false;
-	}
+        if (equals(path.get(pathIndex), context.get(contextIndex))) {
+          pathIndex--;
+          contextIndex--;
+        } else {
+          return false;
+        }
       } else {
-	while (contextIndex >= 0) {
-	  if (evaluate(context, pathIndex - 1, contextIndex)) {
-	    return true;
-	  } else {
-	    contextIndex--;
-	  }
-	}
+        while (contextIndex >= 0) {
+          if (evaluate(context, pathIndex - 1, contextIndex)) {
+            return true;
+          } else {
+            contextIndex--;
+          }
+        }
       }
     }
 
@@ -140,12 +140,12 @@ public class Expression implements Comparator<Expression> {
     expression = expression.replace("}", "}`");
     System.out.println(expression);
     StrTokenizer tokens
-	= new StrTokenizer(expression, charMatcher('/'), charMatcher('`'));
+        = new StrTokenizer(expression, charMatcher('/'), charMatcher('`'));
     tokens.setIgnoreEmptyTokens(false);
     for (String token : asIterable(tokens)) {
       System.out.println(token);
     }
-    
+
   }
 
   public int compare(Expression e1, Expression e2) {
@@ -155,10 +155,10 @@ public class Expression implements Comparator<Expression> {
       int rank1 = getRank(e1.path.get(index1));
       int rank2 = getRank(e2.path.get(index2));
       if (rank1 == rank2) {
-	index1--;
-	index2--;
+        index1--;
+        index2--;
       } else {
-	return rank1 - rank2;
+        return rank1 - rank2;
       }
     }
     return index1 - index2;
@@ -172,7 +172,7 @@ public class Expression implements Comparator<Expression> {
   public String toString() {
     return join(
         transformedIterator(
-            path.iterator(), 
+            path.iterator(),
             new Transformer<Pair<String, String>, String>() {
               public String transform(Pair<String, String> pathElement) {
                 return pathElementToString(pathElement);

@@ -152,6 +152,15 @@ public class ExpressionTest extends Expression
     assertTrue(ex.evaluate(context2));
   }
 
+  public void testCompare1() {
+    String expression1 = "element1/element2";
+    String expression2 = "element";
+    Expression ex1 = new Expression();
+    ex1.parse(expression1, "");
+    Expression ex2 = new Expression();
+    ex2.parse(expression2, "");
+    assertEquals(1, ex1.compare(ex1, ex2));
+  }
 
 }
 

@@ -24,7 +24,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.collections4.CollectionUtils.forAllDo;
 import static org.apache.commons.collections4.CollectionUtils.filter;
 import static org.apache.commons.collections4.CollectionUtils.select;
-import static org.apache.commons.collections4.ComparatorUtils.transformedComparator;
 import static org.apache.commons.collections4.PredicateUtils.identityPredicate;
 import static java.util.Collections.sort;
 
@@ -61,6 +60,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.collections4.Closure;
+import org.apache.commons.collections4.ComparatorUtils;
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.collections4.Transformer;
 import org.apache.commons.collections4.iterators.FilterIterator;
@@ -236,10 +236,11 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
 
       // Sort the handler list
       sort(
-          handlers.get(i), transformedComparator(
+          handlers.get(i),
+          ComparatorUtils.reversedComparator(
+            ComparatorUtils.transformedComparator(
               (Comparator<Expression>)new Expression(),
-              getGetLeftTransformer(Expression.class))
-      );
+              getGetLeftTransformer(Expression.class))));
 
     }
 
@@ -390,13 +391,15 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
       throw new CommonException()
         .setCode(ExceptionCode.NO_SUCH_ELEMENT)
         .set("message", "Missing handler!")
-        .set("handlers", handlers);
+        .set("handlers", handlers)
+        .set("elementStack", elementStack);
     } catch (Exception e) {
       throw new CommonException()
         .setCause(e)
         .set("message", "Handler method invocation failed!")
         .set("event", event)
-        .set("handler method", handlerMethod);
+        .set("handler method", handlerMethod)
+        .set("elementStack", elementStack);
     }
   }
 

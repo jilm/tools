@@ -46,18 +46,26 @@ public class CommonException extends RuntimeException {
    *  from the cause exception.
    */
   public ExceptionCode getCode() {
-    if (code == ExceptionCode.NOT_SPECIFIED && cause != null) {
-      if (cause instanceof CommonException) {
-        return ((CommonException)cause).getCode();
-      } else {
-        for (ExceptionCode ec : ExceptionCode.values()) {
-          if (ec.getCounterpart() == cause.getClass()) {
-            return ec;
-          }
+    if (code == ExceptionCode.NOT_SPECIFIED) {
+      return getCode(cause);
+    } else {
+      return code;
+    }
+  }
+
+  public static ExceptionCode getCode(Throwable throwable) {
+    if (throwable == null) {
+      return ExceptionCode.NOT_SPECIFIED;
+    } else if (throwable instanceof CommonException) {
+      return ((CommonException)throwable).getCode();
+    } else {
+      for (ExceptionCode ec : ExceptionCode.values()) {
+        if (ec.getCounterpart() == throwable.getClass()) {
+          return ec;
         }
       }
+      return ExceptionCode.NOT_SPECIFIED;
     }
-    return code;
   }
 
   /** Cause of the exception. */
@@ -108,6 +116,14 @@ public class CommonException extends RuntimeException {
       }
     }
     return this;
+  }
+
+  public String get(String key) {
+    if (key != null) {
+      return fields.get(key);
+    } else {
+      return null;
+    }
   }
 
   public String getMessage() {

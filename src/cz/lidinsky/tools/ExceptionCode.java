@@ -50,4 +50,17 @@ public enum ExceptionCode {
     return counterpartException;
   }
 
+  public static ExceptionCode getCode(Class<? extends Throwable> throwable) {
+    if (throwable == null) {
+      return NOT_SPECIFIED;
+    }
+    for (ExceptionCode code : ExceptionCode.values()) {
+      if (code.counterpartException != null
+          && code.counterpartException.equals(throwable)) {
+        return code;
+      }
+    }
+    return NOT_SPECIFIED;
+  }
+
 }

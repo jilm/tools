@@ -32,6 +32,7 @@ public enum ExceptionCode {
   INDEX_OUT_OF_BOUNDS (IndexOutOfBoundsException.class),
   INSTANTIATION       (InstantiationException.class),
   INVOCATION_TARGET   (java.lang.reflect.InvocationTargetException.class),
+  NEGATIVE_INDEX      (null),
   NO_SUCH_ELEMENT     (java.util.NoSuchElementException.class),
   NOT_SPECIFIED       (null),
   NULL_ARGUMENT       (NullPointerException.class),

@@ -20,6 +20,8 @@ package cz.lidinsky.tools;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import java.util.List;
+
 public class Validate {
 
   public static <T> T notNull(T object) {
@@ -48,6 +50,35 @@ public class Validate {
 
   public static String notBlank(String object, String def) {
     return isBlank(object) ? def : object;
+  }
+
+  public static int checkIndex(final List<?> list, final int index) {
+    return checkIndex(list.size(), index);
+  }
+
+  public static int checkIndex(final int size, final int index) {
+    if (index < 0) {
+      throw new CommonException()
+        .setCode(ExceptionCode.INDEX_OUT_OF_BOUNDS)
+        .set("index", index);
+    } else if (index >= size) {
+      throw new CommonException()
+        .setCode(ExceptionCode.INDEX_OUT_OF_BOUNDS)
+        .set("index", index)
+        .set("list size", size);
+    } else {
+      return index;
+    }
+  }
+
+  public static int notNegative(final int number) {
+    if (number < 0) {
+      throw new CommonException()
+        .setCode(ExceptionCode.NEGATIVE_INDEX)
+        .set("number", number);
+    } else {
+      return number;
+    }
   }
 
 }

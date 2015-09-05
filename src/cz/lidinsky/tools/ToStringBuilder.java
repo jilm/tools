@@ -18,23 +18,25 @@ package cz.lidinsky.tools;
  *  along with java tools library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import org.apache.commons.lang3.text.StrBuilder;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.ArrayDeque;
 
 public class ToStringBuilder {
 
-  protected StringBuilder sb;
+  protected StrBuilder sb;
 
   public ToStringBuilder() {
-    this(new StringBuilder());
+    this(new StrBuilder());
   }
 
-  public ToStringBuilder(StringBuilder sb) {
+  public ToStringBuilder(StrBuilder sb) {
     this.sb = sb;
   }
 
-  protected ToStringBuilder(StringBuilder sb, String indent) {
+  protected ToStringBuilder(StrBuilder sb, String indent) {
     this(sb);
     this.indent = indent;
   }
@@ -275,7 +277,7 @@ public class ToStringBuilder {
     return this;
   }
 
-  //-----------------------------------
+  //----------------------------------------------------- Append Value Methods.
 
   protected void appendValue(IToStringBuildable object) {
     if (object == null) {
@@ -356,13 +358,6 @@ public class ToStringBuilder {
     }
   }
 
-  @Override
-  public String toString() {
-    return sb.toString();
-  }
-
-  //-----------------------------------
-
   protected void appendValue(String value) {
     if (value == null) {
       appendNull();
@@ -406,16 +401,45 @@ public class ToStringBuilder {
     }
   }
 
+  /**
+   *  Appends array of integer values. If argument is null, <code>null</code>
+   *  text is appended. If the array is empty, <code>empty array<code> text is
+   *  appended. If the array contains repeated values on the neighboring
+   *  indices, say thre is a value 20 on indices 5, 6, 7, 8, the text 4x20 is
+   *  appended.
+   */
   protected void appendValue(int[] value) {
     if (value == null) {
+      // if argument is null
       appendNull();
     } else if (value.length == 0) {
+      // if array is empty
       appendEmptyArray();
     } else {
+      // print "class name"
+      sb.append("int[")
+        .append(value.length)
+        .append("]");
       startArray();
-      for (int i = 0; i < getArraySize(value.length); i++) {
+      int counter = 0; // counter for repeated values
+      int elements = 0; // how many element were written
+      for (int i = 0; i < value.length; i++) {
+        if (i < value.length - 1 && value[i] == value[i + 1]) {
+          counter++;
+          continue;
+        } 
+        if (counter > 0) {
+          sb.append(counter + 1)
+            .append('x');
+          counter = 0;
+        }
         appendValue(value[i]);
         appendArrayDelimiter();
+        elements++;
+        if (elements >= arraySize) {
+          sb.append("...");
+          break;
+        }
       }
       endArray();
     }
@@ -482,6 +506,11 @@ public class ToStringBuilder {
   }
 
   //-------------------------
+
+  @Override
+  public String toString() {
+    return sb.toString();
+  }
 
   protected int fieldCount = 0;
 

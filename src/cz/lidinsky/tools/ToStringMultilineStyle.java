@@ -18,17 +18,19 @@ package cz.lidinsky.tools;
  *  along with java tools library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import org.apache.commons.lang3.text.StrBuilder;
+
 public class ToStringMultilineStyle extends ToStringBuilder {
 
   public ToStringMultilineStyle() {
     super();
   }
 
-  public ToStringMultilineStyle(StringBuilder sb) {
+  public ToStringMultilineStyle(StrBuilder sb) {
     super(sb);
   }
 
-  protected ToStringMultilineStyle(StringBuilder sb, String indent) {
+  protected ToStringMultilineStyle(StrBuilder sb, String indent) {
     super(sb, indent);
   }
 

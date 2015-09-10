@@ -9,14 +9,14 @@ import org.junit.*;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 
-public class ToStringMultilineStyleTest implements IToStringBuildable {
+public class ToStringBuilderTest implements IToStringBuildable {
 
-  protected static class EmptyClass extends ToStringMultilineStyleTest {
+  protected static class EmptyClass extends ToStringBuilderTest {
     public void toString(ToStringBuilder builder) {
     }
   }
 
-  protected static class IntField extends ToStringMultilineStyleTest {
+  protected static class IntField extends ToStringBuilderTest {
     public void toString(ToStringBuilder builder) {
       builder.append("integer", 34);
     }
@@ -59,21 +59,21 @@ public class ToStringMultilineStyleTest implements IToStringBuildable {
     }
   }
 
-  protected static class ObjectField extends ToStringMultilineStyleTest {
+  protected static class ObjectField extends ToStringBuilderTest {
     public void toString(ToStringBuilder builder) {
       super.toString(builder);
       builder.append("Object field", new Object());
     }
   }
 
-  protected static class NestedObject extends ToStringMultilineStyleTest {
+  protected static class NestedObject extends ToStringBuilderTest {
     public void toString(ToStringBuilder builder) {
       super.toString(builder);
       builder.append("Nested object", new IntField());
     }
   }
 
-  protected static class FloatList extends ToStringMultilineStyleTest {
+  protected static class FloatList extends ToStringBuilderTest {
     public void toString(ToStringBuilder builder) {
       super.toString(builder);
       ArrayList<Float> list = new ArrayList<Float>();
@@ -82,7 +82,7 @@ public class ToStringMultilineStyleTest implements IToStringBuildable {
     }
   }
 
-  protected static class SetField extends ToStringMultilineStyleTest {
+  protected static class SetField extends ToStringBuilderTest {
     public void toString(ToStringBuilder builder) {
       super.toString(builder);
       Set<Object> set = new HashSet<Object>();
@@ -93,7 +93,7 @@ public class ToStringMultilineStyleTest implements IToStringBuildable {
 
   @Override
   public String toString() {
-    return new ToStringMultilineStyle()
+    return new ToStringBuilder()
         .append(this)
         .toString();
   }
@@ -154,6 +154,57 @@ public class ToStringMultilineStyleTest implements IToStringBuildable {
   @Test
   public void test11() {
     System.out.println(new SetField().toString());
+  }
+
+  @Test
+  public void testEmptyIntArray() {
+    System.out.println(new ToStringBuilder().append(new int[0]).toString());
+  }
+
+  @Test
+  public void testIntArray1() {
+    System.out.println(new ToStringBuilder().append(new int[] {1}).toString());
+  }
+
+  @Test public void testIntArray2() {
+    System.out.println(new ToStringBuilder().append(new int[20]).toString());
+  }
+
+  @Test public void testIntArray3() {
+    System.out.println(new ToStringBuilder()
+        .append(new int[] {1, 2, 3, 3, 3, 4, 3, 5, 5, 6})
+        .toString());
+  }
+
+  @Test public void testIntArray4() {
+    System.out.println(new ToStringBuilder()
+        .append(new int[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21})
+        .toString());
+  }
+
+  @Test public void testIntArray5() {
+    int[] intArray = new int[100];
+    for (int i = 0; i < intArray.length; i++) {
+      intArray[i] = (int)Math.round(
+          (Math.random() * 2d - 1d) * (double)Integer.MAX_VALUE);
+    }
+    System.out.println(new ToStringBuilder().append(intArray).toString());
+  }
+
+  @Test public void testIntArray6() {
+    int[] intArray = new int[30];
+    fillRandomly(intArray);
+    for (int i = 5; i < 20; i++) {
+      intArray[i] = i * -3;
+    }
+    System.out.println(new ToStringBuilder().append(intArray).toString());
+  }
+
+  private void fillRandomly(int[] intArray) {
+    for (int i = 0; i < intArray.length; i++) {
+      intArray[i] = (int)Math.round(
+          (Math.random() * 2d - 1d) * (double)Integer.MAX_VALUE);
+    }
   }
 
 }

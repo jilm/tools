@@ -18,620 +18,585 @@ package cz.lidinsky.tools;
  *  along with java tools library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import org.apache.commons.lang3.text.StrBuilder;
+import org.apache.commons.lang3.StringUtils;
+//import org.apache.commons.lang3.text.StrBuilder;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.ArrayDeque;
 
+/**
+ *  Examples:
+ *  <pre>
+ *    ColorClass@123456[R: 0, G: 128, B: 128]
+ *
+ *    Employees@abcdg {
+ *      Employee@456789[name: Johny Walker, position: director, born: 1973],
+ *      Employee@ABYCDH[name: Bob Dylen, position: performer, born: 1963],
+ *      ...
+ *    }
+ *
+ *    Recipe@845421 [
+ *      name: Lemon-avocado chicken salad,
+ *      categories: Set {
+ *        Avocados, Chicken, Chicken Salad, Fruit, Lunch, Lunch Salad,
+ *        Quick and Easy, Salad
+ *      },
+ *      ingredients: {
+ *        00: chopped deli-rosted chicken, chopped celery, mayonnaise,
+ *        03: thinly sliced green onion tops, chopped fresh parsley,
+ *        05: finely shredded Parmesan cheese, lemon juice, lemon zest,
+ *        08: garlic, ground black pepper, chpped avocado
+ *      },
+ *      directions: List{
+ *        In a small bowl, stir together chicken, celery, mayonnaise, green onion, parsley, lemon juice and black pepper. Add Parmesan cheese, lemon zest and garlic. Toss gently to combine. Add avocado before serving. Gently toss to combine.
+ *      }
+ *    ]
+ *
+ *  </pre>
+ *
+ *
+ */
 public class ToStringBuilder {
 
-  protected StrBuilder sb;
+  protected StrBuffer sb;
 
   public ToStringBuilder() {
-    this(new StrBuilder());
+    this(new StrBuffer());
   }
 
-  public ToStringBuilder(StrBuilder sb) {
+  public ToStringBuilder(StrBuffer sb) {
     this.sb = sb;
   }
 
-  protected ToStringBuilder(StrBuilder sb, String indent) {
-    this(sb);
-    this.indent = indent;
-  }
-
+  /**
+   *  It place following sequence into the buffer.
+   *  <ol>
+   *    <li> [CLASS_NAME_CODE][class name]
+   *    <li> [HASH_CODE][class hash]
+   *    <li> [OBJECT_START_CODE]
+   *    <li> object content
+   *    <li> [OBJECT_END_CODE]
+   *  </ol>
+   */
   public ToStringBuilder append(String fieldName, IToStringBuildable object) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
-      appendValue(object);
-      appendFieldDelimiter();
+      sb.append(KEY_CODE, fieldName);
+      append(object);
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, Object object) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
-      appendValue(object);
-      appendFieldDelimiter();
+      sb.append(KEY_CODE, fieldName);
+      append(object);
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, String value) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
-      appendValue(value);
-      appendFieldDelimiter();
+      sb.append(KEY_CODE, fieldName);
+      append(value);
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, Iterable value) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
-      appendValue(value);
-      appendFieldDelimiter();
-    }
-    return this;
-  }
-
-  public ToStringBuilder append(String value) {
-    if (value != null) {
-      appendValue(value);
+      sb.append(KEY_CODE, fieldName);
+      append(value);
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, String[] value) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
-      appendValue(value);
-      appendFieldDelimiter();
+      sb.append(KEY_CODE, fieldName);
+      append(value);
     }
-    return this;
-  }
-
-  public ToStringBuilder append(String[] value) {
-    appendValue(value);
     return this;
   }
 
   public ToStringBuilder append(String fieldName, int value) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
-      appendValue(value);
-      appendFieldDelimiter();
+      sb.append(KEY_CODE, fieldName);
+      append(value);
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, long value) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
-      appendValue(value);
-      appendFieldDelimiter();
+      sb.append(KEY_CODE, fieldName);
+      append(value);
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, boolean value) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
-      appendValue(value);
-      appendFieldDelimiter();
+      sb.append(KEY_CODE, fieldName);
+      append(value);
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, float value) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
-      appendValue(value);
-      appendFieldDelimiter();
+      sb.append(KEY_CODE, fieldName);
+      append(value);
     }
     return this;
   }
 
   public ToStringBuilder append(String fieldName, double value) {
     if (fieldName != null) {
-      appendFieldName(fieldName);
-      appendValue(value);
-      appendFieldDelimiter();
+      sb.append(KEY_CODE, fieldName);
+      append(value);
+    }
+    return this;
+  }
+
+  public ToStringBuilder append(String value) {
+    if (value == null) {
+      appendNull();
+    } else {
+      sb.append(ATOM_CODE, value);
+    }
+    return this;
+  }
+
+  public ToStringBuilder append(String[] value) {
+    if (value == null) {
+      appendNull();
+    } else if (value.length == 0) {
+      appendEmptyArray();
+    } else {
+      sb.append(CLASS_NAME_CODE, "String[]");
+      appendHashCode(value);
+      startArray();
+      for (String element : value) {
+        append(element);
+      }
+      endArray();
     }
     return this;
   }
 
   public ToStringBuilder append(IToStringBuildable object) {
-    if (object != null) {
-      appendValue(object);
-    }
-    return this;
-  }
-
-  public ToStringBuilder append(Object object) {
-    if (object != null) {
-      appendValue(object);
-    }
-    return this;
-  }
-
-  public ToStringBuilder append(Iterable object) {
-    if (object != null) {
-      appendValue(object);
-    }
-    return this;
-  }
-
-  public ToStringBuilder append(int value) {
-    appendValue(value);
-    return this;
-  }
-
-  public ToStringBuilder append(long value) {
-    appendValue(value);
-    return this;
-  }
-
-  public ToStringBuilder append(boolean value) {
-    appendValue(value);
-    return this;
-  }
-
-  public ToStringBuilder append(float value) {
-    appendValue(value);
-    return this;
-  }
-
-  public ToStringBuilder append(double value) {
-    appendValue(value);
-    return this;
-  }
-
-  public ToStringBuilder append(String fieldName, IToStringBuildable[] value) {
-    if (fieldName != null) {
-      appendFieldName(fieldName);
-      appendValue(value);
-      appendFieldDelimiter();
-    }
-    return this;
-  }
-
-  public ToStringBuilder append(String fieldName, Object[] value) {
-    if (fieldName != null) {
-      appendFieldName(fieldName);
-      appendValue(value);
-      appendFieldDelimiter();
-    }
-    return this;
-  }
-
-  public ToStringBuilder append(String fieldName, int[] value) {
-    if (fieldName != null) {
-      appendFieldName(fieldName);
-      appendValue(value);
-      appendFieldDelimiter();
-    }
-    return this;
-  }
-
-  public ToStringBuilder append(String fieldName, long[] value) {
-    if (fieldName != null) {
-      appendFieldName(fieldName);
-      appendValue(value);
-      appendFieldDelimiter();
-    }
-    return this;
-  }
-
-  public ToStringBuilder append(String fieldName, boolean[] value) {
-    if (fieldName != null) {
-      appendFieldName(fieldName);
-      appendValue(value);
-      appendFieldDelimiter();
-    }
-    return this;
-  }
-
-  public ToStringBuilder append(String fieldName, float[] value) {
-    if (fieldName != null) {
-      appendFieldName(fieldName);
-      appendValue(value);
-      appendFieldDelimiter();
-    }
-    return this;
-  }
-
-  public ToStringBuilder append(String fieldName, double[] value) {
-    if (fieldName != null) {
-      appendFieldName(fieldName);
-      appendValue(value);
-      appendFieldDelimiter();
-    }
-    return this;
-  }
-
-  public ToStringBuilder append(int[] value) {
-    appendValue(value);
-    return this;
-  }
-
-  public ToStringBuilder append(long[] value) {
-    appendValue(value);
-    return this;
-  }
-
-  public ToStringBuilder append(boolean[] value) {
-    appendValue(value);
-    return this;
-  }
-
-  public ToStringBuilder append(float[] value) {
-    appendValue(value);
-    return this;
-  }
-
-  public ToStringBuilder append(double[] value) {
-    appendValue(value);
-    return this;
-  }
-
-  //----------------------------------------------------- Append Value Methods.
-
-  protected void appendValue(IToStringBuildable object) {
     if (object == null) {
       appendNull();
     } else {
       appendClassName(object.getClass());
       appendHashCode(object);
       startObject();
-      ToStringBuilder nested = new ToStringBuilder(sb, incIndent());
-      object.toString(nested);
-      nested.removeFieldDelimiter();
+      object.toString(new ToStringBuilder(sb));
       endObject();
     }
+    return this;
   }
 
-  protected void appendValue(IToStringBuildable[] value) {
-    if (value == null) {
-      appendNull();
-    } else if (value.length == 0) {
-      appendEmptyArray();
-    } else {
-      appendClassName(value.getClass());
-      appendHashCode(value);
-      startArray();
-      for (int i = 0; i < getArraySize(value.length); i++) {
-        appendValue(value[i]);
-        appendArrayDelimiter();
-      }
-      endArray();
-    }
-  }
-
-  protected void appendValue(Object[] value) {
-    if (value == null) {
-      appendNull();
-    } else if (value.length == 0) {
-      appendEmptyArray();
-    } else {
-      appendClassName(value.getClass());
-      appendHashCode(value);
-      startArray();
-      for (int i = 0; i < getArraySize(value.length); i++) {
-        appendValue(value[i]);
-        appendArrayDelimiter();
-      }
-      endArray();
-    }
-  }
-
-  protected void appendValue(Object object) {
+  public void append(Object object) {
     if (object == null) {
       appendNull();
     } else {
       if (object instanceof IToStringBuildable) {
-        appendValue((IToStringBuildable)object);
+        append((IToStringBuildable)object);
       } else if (object instanceof Integer) {
-        appendValue(((Integer)object).intValue());
+        append(((Integer)object).intValue());
       } else {
-        sb.append(object);
+        sb.append(ATOM_CODE, object);
       }
     }
   }
 
-  protected void appendValue(Iterable value) {
+  public ToStringBuilder append(int value) {
+    sb.append(ATOM_CODE, value);
+    return this;
+  }
+
+  public ToStringBuilder append(long value) {
+    sb.append(ATOM_CODE, value);
+    return this;
+  }
+
+  public ToStringBuilder append(boolean value) {
+    sb.append(ATOM_CODE, value);
+    return this;
+  }
+
+  public ToStringBuilder append(float value) {
+    sb.append(ATOM_CODE, value);
+    return this;
+  }
+
+  public ToStringBuilder append(double value) {
+    sb.append(ATOM_CODE, value);
+    return this;
+  }
+
+  public ToStringBuilder append(Iterable object) {
+    if (object == null) {
+      appendNull();
+    } else {
+      sb.append(CLASS_NAME_CODE, "Iterable[]");
+      appendHashCode(object);
+      startArray();
+      for (Object element : object) {
+        append(element);
+      }
+      endArray();
+    }
+    return this;
+  }
+
+  public ToStringBuilder append(String fieldName, IToStringBuildable[] value) {
+    if (fieldName != null) {
+      sb.append(KEY_CODE, fieldName);
+      append(value);
+    }
+    return this;
+  }
+
+  public ToStringBuilder append(String fieldName, Object[] value) {
+    if (fieldName != null) {
+      sb.append(KEY_CODE, fieldName);
+      append(value);
+      //appendFieldDelimiter();
+    }
+    return this;
+  }
+
+  public ToStringBuilder append(String fieldName, int[] value) {
+    if (fieldName != null) {
+      sb.append(KEY_CODE, fieldName);
+      append(value);
+    }
+    return this;
+  }
+
+  public ToStringBuilder append(String fieldName, long[] value) {
+    if (fieldName != null) {
+      sb.append(KEY_CODE, fieldName);
+      append(value);
+    }
+    return this;
+  }
+
+  public ToStringBuilder append(String fieldName, boolean[] value) {
+    if (fieldName != null) {
+      sb.append(KEY_CODE, fieldName);
+      append(value);
+    }
+    return this;
+  }
+
+  public ToStringBuilder append(String fieldName, float[] value) {
+    if (fieldName != null) {
+      sb.append(KEY_CODE, fieldName);
+      append(value);
+    }
+    return this;
+  }
+
+  public ToStringBuilder append(String fieldName, double[] value) {
+    if (fieldName != null) {
+      sb.append(KEY_CODE, fieldName);
+      append(value);
+    }
+    return this;
+  }
+
+  public ToStringBuilder append(int[] value) {
     if (value == null) {
       appendNull();
-    } else if (!value.iterator().hasNext()) {
-      appendEmptyCollection();
+    } else if (value.length == 0) {
+      appendEmptyArray();
     } else {
-      appendClassName(value.getClass());
+      sb.append(CLASS_NAME_CODE, "int[]");
       appendHashCode(value);
       startArray();
-      for (Object element : value) {
-        appendValue(element);
-        appendArrayDelimiter();
+      for (int element : value) {
+        append(element);
       }
       endArray();
     }
+    return this;
   }
 
-  protected void appendValue(String value) {
-    if (value == null) {
-      appendNull();
-    } else {
-      sb.append(value);
-    }
-  }
-
-  protected void appendValue(int value) {
-    sb.append(value);
-  }
-
-  protected void appendValue(long value) {
-    sb.append(value);
-  }
-
-  protected void appendValue(boolean value) {
-    sb.append(value);
-  }
-
-  protected void appendValue(float value) {
-    sb.append(value);
-  }
-
-  protected void appendValue(double value) {
-    sb.append(value);
-  }
-
-  protected void appendValue(String[] value) {
+  public ToStringBuilder append(long[] value) {
     if (value == null) {
       appendNull();
     } else if (value.length == 0) {
       appendEmptyArray();
     } else {
+      sb.append(CLASS_NAME_CODE, "long[]");
+      appendHashCode(value);
       startArray();
-      for (int i = 0; i < getArraySize(value.length); i++) {
-        appendValue(value[i]);
-        appendArrayDelimiter();
+      for (long element : value) {
+        append(element);
       }
       endArray();
     }
+    return this;
   }
 
-  /**
-   *  Appends array of integer values. If argument is null, <code>null</code>
-   *  text is appended. If the array is empty, <code>empty array<code> text is
-   *  appended. If the array contains repeated values on the neighboring
-   *  indices, say thre is a value 20 on indices 5, 6, 7, 8, the text 4x20 is
-   *  appended.
-   */
-  protected void appendValue(int[] value) {
-    if (value == null) {
-      // if argument is null
-      appendNull();
-    } else if (value.length == 0) {
-      // if array is empty
-      appendEmptyArray();
-    } else {
-      // print "class name"
-      sb.append("int[")
-        .append(value.length)
-        .append("]");
-      startArray();
-      int counter = 0; // counter for repeated values
-      int elements = 0; // how many element were written
-      for (int i = 0; i < value.length; i++) {
-        if (i < value.length - 1 && value[i] == value[i + 1]) {
-          counter++;
-          continue;
-        } 
-        if (counter > 0) {
-          sb.append(counter + 1)
-            .append('x');
-          counter = 0;
-        }
-        appendValue(value[i]);
-        appendArrayDelimiter();
-        elements++;
-        if (elements >= arraySize) {
-          sb.append("...");
-          break;
-        }
-      }
-      endArray();
-    }
-  }
-
-  protected void appendValue(long[] value) {
+  public ToStringBuilder append(boolean[] value) {
     if (value == null) {
       appendNull();
     } else if (value.length == 0) {
       appendEmptyArray();
     } else {
+      sb.append(CLASS_NAME_CODE, "boolean[]");
+      appendHashCode(value);
       startArray();
-      for (int i = 0; i < getArraySize(value.length); i++) {
-        appendValue(value[i]);
-        appendArrayDelimiter();
+      for (boolean element : value) {
+        append(element);
       }
       endArray();
     }
+    return this;
   }
 
-  protected void appendValue(boolean[] value) {
+  public ToStringBuilder append(float[] value) {
     if (value == null) {
       appendNull();
     } else if (value.length == 0) {
       appendEmptyArray();
     } else {
+      sb.append(CLASS_NAME_CODE, "float[]");
+      appendHashCode(value);
       startArray();
-      for (int i = 0; i < getArraySize(value.length); i++) {
-        appendValue(value[i]);
-        appendArrayDelimiter();
+      for (float element : value) {
+        append(element);
       }
       endArray();
     }
+    return this;
   }
 
-  protected void appendValue(float[] value) {
+  public ToStringBuilder append(double[] value) {
     if (value == null) {
       appendNull();
     } else if (value.length == 0) {
       appendEmptyArray();
     } else {
+      sb.append(CLASS_NAME_CODE, "double[]");
+      appendHashCode(value);
       startArray();
-      for (int i = 0; i < getArraySize(value.length); i++) {
-        appendValue(value[i]);
-        appendArrayDelimiter();
+      for (double element : value) {
+        append(element);
       }
       endArray();
     }
+    return this;
   }
 
-  protected void appendValue(double[] value) {
-    if (value == null) {
-      appendNull();
-    } else if (value.length == 0) {
-      appendEmptyArray();
-    } else {
-      startArray();
-      for (int i = 0; i < getArraySize(value.length); i++) {
-        appendValue(value[i]);
-        appendArrayDelimiter();
-      }
-      endArray();
-    }
-  }
-
-  //-------------------------
+  //----------------------------------------------------- Append Value Methods.
 
   @Override
   public String toString() {
+    new DefaultTypesetter().build(sb);
     return sb.toString();
   }
 
-  protected int fieldCount = 0;
-
-  protected void appendFieldName(String fieldName) {
-    if (fieldName != null) {
-      sb.append(fieldName);
-      appendFieldValueDelimiter();
-    }
-  }
+  public static final char KEY_CODE = 'k';
+  public static final char ATOM_CODE = 'a';
+  public static final char OBJECT_START_CODE = 'o';
+  public static final char ARRAY_START_CODE = 'y';
+  public static final char OBJECT_END_CODE = 'e';
+  public static final char ARRAY_END_CODE = 'n';
+  public static final char CLASS_NAME_CODE = 'c';
+  public static final char HASH_CODE = 'h';
 
   protected void appendHashCode(Object object) {
-    sb.append('@');
-    sb.append(Integer.toHexString(object.hashCode()));
+    sb.append(HASH_CODE, Integer.toHexString(object.hashCode()));
   }
 
   protected boolean simpleClassName = true;
 
   protected void appendClassName(Class _class) {
-    if (simpleClassName) {
-      sb.append(_class.getSimpleName());
-    } else {
-      sb.append(_class.getName());
-    }
+    sb.append(
+        CLASS_NAME_CODE,
+        simpleClassName ? _class.getSimpleName() : _class.getName());
   }
 
   protected void startObject() {
-    sb.append('[');
+    sb.append(OBJECT_START_CODE, "");
   }
 
   protected void endObject() {
-    sb.append(']');
-  }
-
-  protected void removeLastChars(int count) {
-    sb.delete(sb.length() - count, sb.length());
-  }
-
-  protected void appendFieldValueDelimiter() {
-    sb.append('=');
-    fieldCount++;
-  }
-
-  protected String fieldDelimiter = ",";
-
-  protected void appendFieldDelimiter() {
-    sb.append(fieldDelimiter);
-  }
-
-  protected void removeFieldDelimiter() {
-    if (fieldCount > 0) {
-      removeLastChars(fieldDelimiter.length());
-    }
+    sb.append(OBJECT_END_CODE, "");
   }
 
   protected void appendNull() {
-    sb.append("<null>");
+    sb.append(ATOM_CODE, "<null>");
   }
 
   protected void appendEmptyArray() {
-    sb.append("<empty array>");
+    sb.append(ATOM_CODE, "<empty array>");
   }
 
-  protected void appendEmptyCollection() {
-    sb.append("<empty collection>");
-  }
+  //------------------------------------------ Collection of Integers Handling.
 
+  /** Indicate that the collection or array is rendered. */
+  protected boolean collection = false;
+
+  /** Counts number of elements of the collection or array. */
+  protected int collectionSize;
+
+  /** How many elements will be rendered before it is abbreviated. */
+  protected int elementsBeforeAbbreviate = 20;
+
+  /** If the collection is abbreviated. */
+  protected boolean collectionAbbreviated;
+
+  /** First value of the arithmetic sequence. */
+  protected int arithmeticSeqA0;
+
+  /** Difference between consecutive elements of the arithmetic sequence. */
+  protected int arithmeticSeqDiff;
+
+  /** Number of elements of the arithmetic sequence. */
+  protected int arithmeticSeqN;
+
+  /** Number of characters of the biggest elements in the sequence. */
+  protected int maxElementSize;
+
+  /** Index of the first character of the first element of the collection into
+  the string buffer. */
+  protected int collectionValuesStartIndex;
+
+  /** Number of elements which were appended into the collection. */
+  protected int collectionElements;
+
+  protected int arithmeticSeqA0Index;
+
+  /** Index into the string builder that indicates where to place collection
+  size. */
+  protected int collectionSizeIndex;
+
+  /**
+   *  Initialize all of the neccessary counters and temporary fields before
+   *  some sequence is started and appends characters that preceeds the
+   *  collection.
+   */
   protected void startArray() {
-    sb.append('{');
+    sb.append(ARRAY_START_CODE, "");
+    collection = true;
+    collectionSize = 0;
+    collectionElements = 0;
+    collectionAbbreviated = false;
+    arithmeticSeqN = 0;
   }
 
   protected void endArray() {
-    if (arrayElementCount > arraySize) {
-      sb.append("... ");
-      sb.append("<total size: ");
-      sb.append(arrayElementCount);
-      sb.append(">");
-      sb.append('}');
+    //handleArithmeticSeq();
+    // inserts the collection size
+    //reformatCollection();
+    //sb.insert(collectionSizeIndex, collectionSize);
+    // close the collection
+    //if (collectionAbbreviated) sb.append(", ...");
+    collection = false;
+    sb.append(ARRAY_END_CODE, "");
+  }
+
+  /*
+
+  protected void reformatCollection() {
+    if (!collection) return;
+    int index = collectionValuesStartIndex;
+    while (index < sb.length() - 3) {
+      index = cleenAndGetNext(index);
+      if (index < sb.length() - 1) {
+        sb.insert(index, ", ");
+        index += 2;
+      }
+    }
+  }
+  */
+
+  /*
+
+  protected void detectArithmeticSeq(int value) {
+    if (arithmeticSeqN == 0) {
+      arithmeticSeqA0 = value;
+      arithmeticSeqN = 1;
+      arithmeticSeqA0Index = sb.length();
+    } else if (arithmeticSeqN == 1) {
+      arithmeticSeqDiff = value - arithmeticSeqA0;
+      arithmeticSeqN++;
     } else {
-      removeArrayDelimiter();
-      sb.append('}');
+      if (arithmeticSeqA0 + (arithmeticSeqN) * arithmeticSeqDiff == value) {
+        // if this point is next element in the sequence
+        arithmeticSeqN++;
+      } else {
+        // if this point is no longer next element of the arithmetic seq.
+        if (arithmeticSeqDiff == 0 || arithmeticSeqN >= 3) {
+          handleArithmeticSeq();
+          // initialize the sequence counters
+          arithmeticSeqA0 = value;
+          arithmeticSeqN = 1;
+          arithmeticSeqA0Index = sb.length();
+        } else {
+          // initialize the sequence counters
+          arithmeticSeqA0 += arithmeticSeqDiff;
+          arithmeticSeqA0Index = getNext(arithmeticSeqA0Index);
+          arithmeticSeqDiff = value - arithmeticSeqA0;
+          arithmeticSeqN = 2;
+        }
+      }
+    }
+  }
+  */
+
+  /*
+
+  protected void handleArithmeticSeq() {
+    if (arithmeticSeqDiff == 0 && arithmeticSeqN >= 2) {
+      // there are at least two consecutive identical values
+      // get index of the first element of the sequence
+      int index = arithmeticSeqA0Index;
+      // delete all of the element that belongs to the sequence
+      sb.delete(index, sb.length());
+      collectionElements -= arithmeticSeqN;
+      collectionSize--;
+      // append abbreviated form of the sequence
+      String strSeq
+        = Integer.toString(arithmeticSeqN)
+        + "x" + Integer.toString(arithmeticSeqA0);
+      appendValue(strSeq);
+    } else if (arithmeticSeqN >= 3) {
+      // there are at least three consecutive values that forms the
+      // arithmetic sequence.
+      // get the index of the first element of the sequence
+      int index = indexOfCollectionElement(collectionElements - arithmeticSeqN);
+      // delete all of the element that belongs to the sequence
+      sb.delete(index, sb.length());
+      collectionElements -= arithmeticSeqN;
+      collectionSize--;
+      // append abbreviated form of the sequence
+      String strSeq
+        = Integer.toString(arithmeticSeqA0)
+        + "+nx" + Integer.toString(arithmeticSeqDiff)
+        + ";for n in (0.." + Integer.toString(arithmeticSeqN) + ")";
+      appendValue(strSeq);
+    } else {
     }
   }
 
-  protected void removeArrayDelimiter() {
-    removeLastChars(arrayDelimiter.length());
+  */
+/*
+  protected int indexOfCollectionElement(int elementN) {
+    int index = collectionValuesStartIndex;
+    for (int i = 0; i < elementN; i++) {
+      int elementLength = Integer.parseInt(sb.midString(index, 3));
+      index += elementLength + 3;
+    }
+    return index;
   }
-
-  protected String arrayDelimiter = ",";
-
-  protected int arrayElementCount = 0;
-
-  protected void appendArrayDelimiter() {
-    sb.append(arrayDelimiter);
-    arrayElementCount++;
-  }
-
-  protected static int arraySize = 10;
-
-  protected int getArraySize(int arrayLength) {
-    return Math.min(arraySize, arrayLength);
-  }
-
-  protected String indent = "";
-
-  protected String incIndent() {
-    return indent;
-  }
-
-  protected void newLine() {
-    sb.append("\n")
-      .append(indent);
-  }
-
-  protected int position = 0;
-
-  protected void mark() {
-    position = sb.length();
-  }
-
-  protected void removeToMark() {
-    sb.delete(position, sb.length());
-  }
+*/
 
 }

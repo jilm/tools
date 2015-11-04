@@ -82,6 +82,11 @@ public class CommonException extends RuntimeException {
     return this;
   }
 
+  @Override
+  public Throwable getCause() {
+    return cause;
+  }
+
   /** Additional information. */
   protected HashMap<String, String> fields = new HashMap<String, String>();
 
@@ -126,34 +131,89 @@ public class CommonException extends RuntimeException {
     }
   }
 
+  @Override
   public String getMessage() {
+    return fields.get("message");
+  }
+
+  @Override
+  public String toString() {
     // header
     StringBuilder sb = new StringBuilder()
-      .append("EXCEPTION ! Exception Code: ")
-      .append(getCode());
-    // additional information
-    Set<Map.Entry<String, String>> entries = fields.entrySet();
-    for (Map.Entry<String, String> entry : entries) {
-      sb.append("\n")
-        .append(entry.getKey())
-        .append(", ")
-        .append(entry.getValue());
-    }
-    // stack information
-    if (getStackTrace().length > 0) {
-      sb.append("\nClass Name: ")
-        .append(getStackTrace()[0].getClassName())
-        .append("\nMethod Name: ")
-        .append(getStackTrace()[0].getMethodName());
-    }
-    // cause
-    if (cause != null) {
-      sb.append("\nCause: ")
-        .append(cause.getClass().getName())
-        .append("\n")
-        .append(cause.getMessage());
-    }
+      .append("An EXCEPTION was thrown! Detailed statement follows.\n")
+      .append("----------------------------------------------------\n")
+      .append("a) Exception chain\n");
+    printExceptionChain(sb, this);
+    sb.append("b) Message.\n");
+    printMessage(sb, this);
+    sb.append("c) Detail info.\n");
+    printMore(sb, this);
+    sb.append("d) Stack info.\n");
+    printStackInfo(sb, this);
+    sb.append("----------------------------------------------------\n")
+      .append("This is the end of the exception statement.\n");
     return sb.toString();
+  }
+
+  private int printMessage(StringBuilder sb, Throwable e) {
+    if (e == null) return 1;
+    int index = printMessage(sb, e.getCause());
+    String message = e.getMessage();
+    sb.append("    ")
+      .append(index)
+      .append(". ")
+      .append(message)
+      .append("\n");
+    return index + 1;
+  }
+
+  private int printExceptionChain(StringBuilder sb, Throwable e) {
+    if (e == null) return 1;
+    Throwable cause = e.getCause();
+    int index = printExceptionChain(sb, cause);
+    ExceptionCode code = getCode(e);
+    sb.append("    ")
+      .append(index)
+      .append(". ")
+      .append(code)
+      .append("\n");
+    return index + 1;
+  }
+
+  private void printMore(StringBuilder sb, Throwable e) {
+    if (e == null) return;
+    java.util.SortedSet<String> data = new java.util.TreeSet<String>();
+    Throwable cause = e;
+    while (cause != null) {
+      if (cause instanceof CommonException) {
+        for (Map.Entry<String, String> entry
+            : ((CommonException)cause).fields.entrySet()) {
+          data.add(entry.getKey() + ": " + entry.getValue());
+        }
+      }
+      cause = cause.getCause();
+    }
+    for (String item : data) {
+      sb.append("    ")
+        .append(item)
+        .append("\n");
+    }
+
+  }
+
+  private int printStackInfo(StringBuilder sb, Throwable e) {
+    if (e == null) return 1;
+    int index = printStackInfo(sb, e.getCause());
+    if (e.getStackTrace().length > 0) {
+      sb.append("    ")
+        .append(index)
+        .append(". ")
+        .append(getStackTrace()[0].getClassName())
+        .append("#")
+        .append(getStackTrace()[0].getMethodName())
+        .append("\n");
+    }
+    return index + 1;
   }
 
 }

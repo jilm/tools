@@ -176,7 +176,9 @@ public class CommonException extends RuntimeException {
       .append(index)
       .append(". ")
       .append(code)
-      .append("\n");
+      .append(" (")
+      .append(e.getClass().getSimpleName())
+      .append(")\n");
     return index + 1;
   }
 
@@ -208,9 +210,9 @@ public class CommonException extends RuntimeException {
       sb.append("    ")
         .append(index)
         .append(". ")
-        .append(getStackTrace()[0].getClassName())
+        .append(e.getStackTrace()[0].getClassName())
         .append("#")
-        .append(getStackTrace()[0].getMethodName())
+        .append(e.getStackTrace()[0].getMethodName())
         .append("\n");
     }
     return index + 1;

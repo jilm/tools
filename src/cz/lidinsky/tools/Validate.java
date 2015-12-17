@@ -20,6 +20,7 @@ package cz.lidinsky.tools;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import java.util.Collection;
 import java.util.List;
 
 public class Validate {
@@ -35,6 +36,16 @@ public class Validate {
 
   public static <T> T notNull(T object, T def) {
     return object == null ? def : object;
+  }
+
+  public static <T> Collection<T> notEmpty(Collection<T> collection) {
+    if (notNull(collection).isEmpty()) {
+      throw new CommonException()
+        .setCode(ExceptionCode.EMPTY)
+        .set("message", "Given collection is empty!");
+    } else {
+      return collection;
+    }
   }
 
   public static String notBlank(String object) {

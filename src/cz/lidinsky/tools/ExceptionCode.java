@@ -26,6 +26,7 @@ public enum ExceptionCode {
   CLASS_NOT_FOUND     (ClassNotFoundException.class),
   CYCLIC_DEFINITION   (null),
   DUPLICATE_ELEMENT   (null),
+  EMPTY               (null),
   ILLEGAL_ACCESS      (IllegalAccessException.class),
   ILLEGAL_ARGUMENT    (IllegalArgumentException.class),
   ILLEGAL_STATE       (IllegalStateException.class),
@@ -33,13 +34,13 @@ public enum ExceptionCode {
   INSTANTIATION       (InstantiationException.class),
   INVOCATION_TARGET   (java.lang.reflect.InvocationTargetException.class),
   NEGATIVE_INDEX      (null),
-  NO_SUCH_ELEMENT     (java.util.NoSuchElementException.class),
   NOT_SPECIFIED       (null),
+  NO_SUCH_ELEMENT     (java.util.NoSuchElementException.class),
   NULL_ARGUMENT       (NullPointerException.class),
   NULL_POINTER        (NullPointerException.class),
   PARSE               (null),
-  UNSUPPORTED_TYPE    (null),
-  UNSUPPORTED_OPERATION (UnsupportedOperationException.class);
+  UNSUPPORTED_OPERATION (UnsupportedOperationException.class),
+  UNSUPPORTED_TYPE    (null);
 
   ExceptionCode(Class<? extends Throwable> e) {
     counterpartException = e;

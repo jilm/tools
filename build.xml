@@ -87,7 +87,7 @@
             <fileset dir="${bindir}" />
 	    <!--
 	    <manifest >
-	        <attribute name="Main-Class" value="control4j.Control" />
+	        <attribute name="Main-Class" value="" />
 		<section name="common">
 		    <attribute name="Implementation-Version" 
 			       value="${sw.version}" />

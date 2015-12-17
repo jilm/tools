@@ -21,10 +21,17 @@ package cz.lidinsky.tools;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+/**
+ *  String buffer which place a special marks between the characters. These
+ *  marks are then used to format the whole text.
+ */
 class StrBuffer {
 
   private StringBuilder sb;
 
+  /**
+   *  Creates new empty buffer.
+   */
   StrBuffer() {
     sb = new StringBuilder();
   }
@@ -79,8 +86,6 @@ class StrBuffer {
 
   @Override
   public String toString() {
-    //reset();
-    //joinAll();
     cleen(0);
     return sb.toString();
   }
@@ -94,7 +99,8 @@ class StrBuffer {
   private Deque<Integer> cursorStack = new ArrayDeque<Integer>();
 
   /**
-   *  Place the cursor in the internal stack.
+   *  Place the cursor in the internal stack. The <code>pop</code> method may
+   *  be used to restore the cursor position.
    */
   public StrBuffer push() {
     cursorStack.push(cursor);

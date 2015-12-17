@@ -61,6 +61,9 @@ public class ToStringBuilder {
 
   protected StrBuffer sb;
 
+  /**
+   *  Creates new empty string builder object.
+   */
   public ToStringBuilder() {
     this(new StrBuffer());
   }
@@ -70,7 +73,7 @@ public class ToStringBuilder {
   }
 
   /**
-   *  It place following sequence into the buffer.
+   *  Places following sequence into the buffer.
    *  <ol>
    *    <li> [CLASS_NAME_CODE][class name]
    *    <li> [HASH_CODE][class hash]

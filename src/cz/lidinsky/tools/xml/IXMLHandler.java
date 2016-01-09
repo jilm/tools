@@ -48,4 +48,6 @@ public interface IXMLHandler
    */
   void endProcessing();
 
+  void setXMLReader(XMLReader reader);
+
 }

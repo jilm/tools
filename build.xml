@@ -32,20 +32,20 @@
 	<depend srcdir="${srcdir}" destdir="${bindir}" />
         <javac srcdir="${srcdir}" destdir="${bindir}" 
 	    deprecation="no"
-            classpath="depend/commons-lang3.jar:depend/commons-collections.jar"
+            classpath="depend/commons-lang3.jar:depend/commons-collections.jar:depend/json.jar"
 	/>
     </target>
 
     <target name="test" depends="compile" >
         <javac srcdir="${testsrcdir}" destdir="${bindir}" 
-            classpath="depend/commons-lang3.jar:depend/commons-collections.jar:depend/junit.jar"
+            classpath="depend/commons-lang3.jar:depend/commons-collections.jar:depend/junit.jar:depend/json.jar"
 	    />
 	<mkdir dir="${reports}" />
         <junit printsummary="yes" haltonfailure="yes">
 	    <classpath>
 	        <pathelement location="${bindir}" />
                 <pathelement path="${java.class.path}" />
-                <pathelement path="depend/commons-lang3.jar:depend/commons-collections.jar:depend/junit.jar" />
+                <pathelement path="depend/commons-lang3.jar:depend/commons-collections.jar:depend/junit.jar:depend/json.jar" />
 	    </classpath>
 	    <formatter type="plain" />
 	    <batchtest fork="yes" todir="${reports}">
@@ -62,7 +62,7 @@
                 <include name="**/*.java" />
             </fileset>
 	    <classpath>
-                <pathelement path="depend/commons-lang3.jar:depend/commons-collections.jar:depend/junit.jar" />
+                <pathelement path="depend/commons-lang3.jar:depend/commons-collections.jar:depend/junit.jar:depend/json.jar" />
 	    </classpath>
         </javadoc>
     </target>

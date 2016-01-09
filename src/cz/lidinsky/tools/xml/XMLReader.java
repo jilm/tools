@@ -1,7 +1,5 @@
-package cz.lidinsky.tools.xml;
-
 /*
- *  Copyright 2015 Jiri Lidinsky
+ *  Copyright 2015, 2016 Jiri Lidinsky
  *
  *  This file is part of tools.
  *
@@ -18,6 +16,8 @@ package cz.lidinsky.tools.xml;
  *  along with tools.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+package cz.lidinsky.tools.xml;
+
 import static org.apache.commons.lang3.Validate.notNull;
 import static org.apache.commons.lang3.reflect.MethodUtils.getMethodsWithAnnotation;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -27,7 +27,6 @@ import static org.apache.commons.collections4.CollectionUtils.select;
 import static org.apache.commons.collections4.PredicateUtils.identityPredicate;
 import static java.util.Collections.sort;
 
-import static cz.lidinsky.tools.ExceptionUtils.wrapException;
 
 import cz.lidinsky.tools.functors.TransformedPredicate;
 import cz.lidinsky.tools.IToStringBuildable;
@@ -40,12 +39,9 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.Collection;
-import java.util.NoSuchElementException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -63,15 +59,13 @@ import org.apache.commons.collections4.Closure;
 import org.apache.commons.collections4.ComparatorUtils;
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.collections4.Transformer;
-import org.apache.commons.collections4.iterators.FilterIterator;
 
 /**
  *
- *  Uses a SAX parser to read given XML document. This class
- *  serves like a dispatcher which receives events from the parser
- *  and hand them over to the custom handler object. It uses
- *  annotations to choose appropriate receiver method for a
- *  given event.
+ *  Uses a SAX parser to read given XML document. This class serves like a
+ *  dispatcher which receives events from the parser and hand them over to the
+ *  custom handler objects. It uses annotations to choose appropriate receiver
+ *  method for a given event.
  *
  */
 public class XMLReader extends DefaultHandler implements IToStringBuildable {
@@ -98,7 +92,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
 
   /** Handler objects. */
   protected ArrayList<IXMLHandler> handlerObjects
-        		                     = new ArrayList<IXMLHandler>();
+        		                     = new ArrayList<>();
 
   /** Handler methods for events. */
   protected ArrayList<ArrayList<Triple<Expression, Method, IXMLHandler>>>
@@ -107,7 +101,7 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
   /** Contains current element path. Each entry contains uri and element
       local name. */
   protected ArrayList<Pair<String, String>> elementStack
-        	                    = new ArrayList<Pair<String, String>>();
+        	                    = new ArrayList<>();
 
   /**
    *  Initialize the internal data structures.
@@ -304,42 +298,32 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
     }
   }
 
-  /**
-   *  Creates new SAX parser and reads the XML document from
-   *  the given input stream.
-   *
-   *  @param inputStream
-   *             a stream from which the XML document is read
-   *
-   *  @throws IOException
-   *             if something goes wrong
-   */
-  public void load(InputStream inputStream) {
-    try {
-      SAXParserFactory factory = SAXParserFactory.newInstance();
-      factory.setNamespaceAware(true);
-      factory.setXIncludeAware(true);
-      SAXParser parser = factory.newSAXParser();
-      parser.parse(inputStream, this);
-    } catch (Exception e) {
-      throw new CommonException()
-        .setCause(e)
-        .set("message", "Exception while reading a XML file!");
+    public File getFile() {
+        return file;
     }
-  }
 
+    private File file;
+    
   public void load(File file) {
     try {
+        this.file = file;
       SAXParserFactory factory = SAXParserFactory.newInstance();
       factory.setNamespaceAware(true);
       factory.setXIncludeAware(true);
       SAXParser parser = factory.newSAXParser();
       parser.parse(file, this);
+      handlerObjects.stream().forEach(p -> p.setXMLReader(this));
     } catch (Exception e) {
       throw new CommonException()
         .setCause(e)
         .set("message", "Exception while reading a XML file!")
-        .set("file", file);
+        .set("file", file)
+        .set("line1", line1)
+        .set("column1", column1)
+        .set("line2", line2)
+        .set("column2", column2)
+        .set("public id", publicId)
+        .set("system id", systemId);
     }
   }
 
@@ -363,45 +347,51 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
     return select(handlers.get(event), filter);
   }
 
-  protected void callHandlerMethod(int event, Attributes attributes) {
+    protected void callHandlerMethod(int event, Attributes attributes) {
 
-    Method handlerMethod = null;
-    try {
-      boolean processed = false; // indicate that the event was processed
-      Collection<Triple<Expression, Method, IXMLHandler>> handlers
-        = findHandlerMethods(event);
-      for (Triple<Expression, Method, IXMLHandler> handler : handlers) {
-        handlerMethod = handler.getMiddle();
-        switch (event) {
-          case START_ELEMENT_EVENT:
-            processed = (Boolean)handlerMethod.invoke(
-                handler.getRight(), attributes);
-            break;
-          case END_ELEMENT_EVENT:
-            processed = (Boolean)handlerMethod.invoke(handler.getRight());
-            break;
-          case TEXT_EVENT:
-            processed = (Boolean)handlerMethod.invoke(
-                handler.getRight(), characterBuffer.toString());
-            break;
+        Method handlerMethod = null;
+        try {
+            boolean processed = false; // indicate that the event was processed
+            Collection<Triple<Expression, Method, IXMLHandler>> handlers
+                    = findHandlerMethods(event);
+            for (Triple<Expression, Method, IXMLHandler> handler : handlers) {
+                handlerMethod = handler.getMiddle();
+                switch (event) {
+                    case START_ELEMENT_EVENT:
+                        processed = (Boolean) handlerMethod.invoke(
+                                handler.getRight(), attributes);
+                        break;
+                    case END_ELEMENT_EVENT:
+                        processed = (Boolean) handlerMethod.invoke(handler.getRight());
+                        break;
+                    case TEXT_EVENT:
+                        processed = (Boolean) handlerMethod.invoke(
+                                handler.getRight(), characterBuffer.toString());
+                        break;
+                }
+                if (processed) {
+                    return;
+                }
+            }
+            reportMissingHandler(EVENT_LABELS[event]);
+            Exception e = new CommonException()
+                    .setCode(ExceptionCode.NO_SUCH_ELEMENT)
+                    .set("message", "Missing handler!")
+                    .set("handlers", handlers)
+                    .set("elementStack", elementStack);
+            System.err.println(e.toString());
+            throw e;
+        } catch (Exception e) {
+            CommonException ex = new CommonException()
+                    .setCause(e)
+                    .set("message", "Handler method invocation failed!")
+                    .set("event", event)
+                    .set("handler method", handlerMethod)
+                    .set("elementStack", elementStack);
+            System.err.println(ex.toString()); // TODO:
+            throw ex;
         }
-        if (processed) return;
-      }
-      reportMissingHandler(EVENT_LABELS[event]);
-      throw new CommonException()
-        .setCode(ExceptionCode.NO_SUCH_ELEMENT)
-        .set("message", "Missing handler!")
-        .set("handlers", handlers)
-        .set("elementStack", elementStack);
-    } catch (Exception e) {
-      throw new CommonException()
-        .setCause(e)
-        .set("message", "Handler method invocation failed!")
-        .set("event", event)
-        .set("handler method", handlerMethod)
-        .set("elementStack", elementStack);
     }
-  }
 
   /*
    *
@@ -611,13 +601,6 @@ public class XMLReader extends DefaultHandler implements IToStringBuildable {
       .append("\n");
     printElementStack(sb);
     System.err.println(sb.toString());
-  }
-
-  public static void main(String[] args) throws Exception {
-    java.io.InputStream is = new java.io.FileInputStream(args[0]);
-    XMLReader reader = new XMLReader();
-    reader.load(is);
-    is.close();
   }
 
 }

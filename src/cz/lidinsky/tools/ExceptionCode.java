@@ -30,6 +30,7 @@ public enum ExceptionCode {
   ILLEGAL_ACCESS      (IllegalAccessException.class),
   ILLEGAL_ARGUMENT    (IllegalArgumentException.class),
   ILLEGAL_STATE       (IllegalStateException.class),
+  IMPLEMENTATION      (null),
   INDEX_OUT_OF_BOUNDS (IndexOutOfBoundsException.class),
   INSTANTIATION       (InstantiationException.class),
   INVOCATION_TARGET   (java.lang.reflect.InvocationTargetException.class),

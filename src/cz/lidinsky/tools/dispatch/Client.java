@@ -28,15 +28,14 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 /**
- *
- * @author jilm
+ * A client that is dedicated to communicate with dispatch server.
  */
 public class Client {
-    
+
     private final OutputStreamWriter writer;
     private final JSONTokener reader;
     private final Set<Consumer> consumers;
-    
+
     public Client(String host, int port) throws IOException {
         Socket socket = new Socket(host, port);
         writer = new OutputStreamWriter(socket.getOutputStream());
@@ -44,28 +43,28 @@ public class Client {
         closed = false;
         consumers = new HashSet<>();
     }
-    
+
     public synchronized void addConsumer(Consumer consumer) {
         consumers.add(consumer);
     }
-    
+
     public synchronized void removeConsumer(Consumer consumer) {
         consumers.remove(consumer);
     }
-    
+
     private synchronized void consume(Object object) {
         consumers.stream().forEach(consumer -> consumer.accept(object));
     }
-    
+
     public void send(JSONObject object) throws IOException {
         object.write(writer);
         writer.flush();
     }
-    
+
     public Object read() {
         return reader.nextValue();
     }
-    
+
     public void close() throws IOException {
         closed = true;
         writer.close();
@@ -74,9 +73,9 @@ public class Client {
     public void start() {
         new Thread(this::inputLoop).start();
     }
-    
+
     private boolean closed;
-    
+
     private void inputLoop() {
         while (!closed) {
             Object received = reader.nextValue();
@@ -84,7 +83,7 @@ public class Client {
             consume(received);
         }
     }
-    
+
     public static void main(String[] args) throws IOException {
         Client client = new Client("localhost", 12345);
         client.start();
@@ -95,5 +94,5 @@ public class Client {
         client.send(object);
         client.close();
     }
-    
+
 }

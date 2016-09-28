@@ -18,29 +18,35 @@
 
 package cz.lidinsky.tools.dispatch;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.json.JSONTokener;
-import org.json.JSONWriter;
-
-import java.net.Socket;
-import java.net.ServerSocket;
-import java.io.OutputStreamWriter;
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONObject;
+import org.json.JSONTokener;
+import org.json.JSONWriter;
 
 /**
- *
+ * The dispatcher is a server application which listens on the given port. Each
+ * client which connects may send and message which is resent to all of the
+ * clients.
  */
 public class Dispatcher {
- 
+
     private final Queue<Object> buffer;
     private final Set<Client> clients;
     private final Logger logger;
 
+    /**
+     * The port number on which the server listens.
+     *
+     * @param port
+     *            the port number
+     */
     public Dispatcher(final int port) {
         this.logger = Logger.getLogger(getClass().getName());
         this.port = port;
@@ -48,7 +54,7 @@ public class Dispatcher {
         this.clients = new HashSet<>();
         this.closed = false;
     }
-    
+
     public void add(Object object) {
         if (object != null) {
             buffer.queue(object);
@@ -60,17 +66,29 @@ public class Dispatcher {
       logger.log(Level.INFO, "New client added; number of clients: {0}", Integer.toString(clients.size()));
     }
 
+    /**
+     * Removes the given client object from the internal collection.
+     * @param client
+     */
     private synchronized void remove(Client client) {
       clients.remove(client);
       logger.log(Level.INFO, "Client removed; number of clients: {0}", Integer.toString(clients.size()));
     }
 
+    /**
+     * Sends the given object to all of the connected clients.
+     *
+     * @param object
+     */
     private synchronized void send(Object object) {
       clients.stream().forEach(p -> p.send(object));
     }
-    
+
     private boolean closed = false;
-    
+
+    /**
+     * A loop
+     */
     private void run() {
         while (!closed) {
             Object object = buffer.blockingDequeue();
@@ -78,11 +96,14 @@ public class Dispatcher {
             send(object);
         }
     }
-    
+
+    /**
+     * Starts the server thread.
+     */
     public void start() {
         new Thread(this::run).start();
     }
-    
+
     private class Client {
 
         private final OutputStreamWriter streamWriter;
@@ -156,12 +177,20 @@ public class Dispatcher {
 
     }
 
+    /**
+     *
+     */
     public void close() {
       closed = true;
     }
 
-    private int port;
+    /** Port on which the server listens. */
+    private final int port;
 
+    /**
+     * Opens server socket on the given port. New Client object is created for
+     * each new incoming connection request.
+     */
     private void server() {
       try {
         ServerSocket socketServer = new ServerSocket(port);
@@ -177,6 +206,14 @@ public class Dispatcher {
       }
     }
 
+    /**
+     * It expects port number as an command line argument. It creates an
+     * instance of the Dispatcher class and runs it.
+     *
+     * @param args
+     *
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
       int port = Integer.parseInt(args[0]);
       Dispatcher instance = new Dispatcher(port);

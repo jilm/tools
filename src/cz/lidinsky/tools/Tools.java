@@ -19,6 +19,19 @@ public class Tools {
     }
   }
 
+
+  public static void sleep(long millis)
+  {
+    try
+    {
+      Thread.sleep(millis);
+    }
+    catch (InterruptedException e)
+    {
+    }
+  }
+
+
   public static Object parse(Class _class, String value) {
     if (Double.class.isAssignableFrom(_class)
             || double.class.isAssignableFrom(_class)) {

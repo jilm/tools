@@ -26,8 +26,9 @@ import java.util.NoSuchElementException;
 
 /**
  *  A node of the tree.
+ * @param <T>
  */
-public abstract class Node<T> implements INode {
+public class Node<T> {
 
   protected Node<T> parent;
 

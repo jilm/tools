@@ -28,6 +28,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * An exception which contains a map which allows to attach additional
+ * information.
+ */
 public class CommonException extends RuntimeException {
 
   public CommonException() {
@@ -143,9 +147,10 @@ public class CommonException extends RuntimeException {
 
   @Override
   public String toString() {
-    StrBuffer buffer = new StrBuffer();
-    toString(buffer);
-    return new Formatter().format(new StrIterator(buffer.toString()));
+    return new cz.lidinsky.tools.text.ExceptionStatementBuilder().toString(this);
+    //StrBuffer buffer = new StrBuffer();
+    //toString(buffer);
+    //return new Formatter().format(new StrIterator(buffer.toString()));
   }
 
   public void toString(StrBuffer sb) {

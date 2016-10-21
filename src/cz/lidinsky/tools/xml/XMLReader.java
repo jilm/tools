@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import static java.util.Collections.sort;
 import java.util.Comparator;
+import java.util.logging.Logger;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.apache.commons.collections4.Closure;
@@ -93,6 +94,8 @@ public class XMLReader extends DefaultHandler {
   protected ArrayList<Pair<String, String>> elementStack
         	                    = new ArrayList<>();
 
+  public static final Logger logger = Logger.getLogger("cz.lidinsky"); // TODO:
+
   /**
    *  Initialize the internal data structures.
    */
@@ -146,6 +149,7 @@ public class XMLReader extends DefaultHandler {
 
   /**
    *  Returns current document location in the human readable form.
+   * @return
    */
   public String getLocation() {
     StringBuilder sb = new StringBuilder();
@@ -187,6 +191,7 @@ public class XMLReader extends DefaultHandler {
    *  respond to the xml start element and xml end element events.
    *  Such methods must be annotated by AXMLStartElement and
    *  AXMLEndElement annotations.
+   * @param handler
    */
   public void addHandler(IXMLHandler handler) {
 
@@ -409,13 +414,15 @@ public class XMLReader extends DefaultHandler {
       callHandlerMethod(START_ELEMENT_EVENT, attributes);
 
     } catch (Exception e) {
-      throw new CommonException()
+      CommonException ex = new CommonException()
         .setCause(e)
         .set("message", "Exception while processing Start Element event!")
         .set("uri", uri)
         .set("local name", localName)
         .set("qName", qName)
         .set("attributes", attributes);
+      logger.severe(ex.toString());
+      throw ex;
     }
   }
 
@@ -437,7 +444,7 @@ public class XMLReader extends DefaultHandler {
     try {
       callHandlerMethod(END_ELEMENT_EVENT, null);
     } catch (Exception e) {
-      reportException(e);
+      logger.severe(e.toString());
       throw new SAXException(e);
     }
 

@@ -54,7 +54,6 @@ public class Dispatcher {
         this.clients = new HashSet<>();
         this.closed = false;
     }
-
     public void add(Object object) {
         if (object != null) {
             buffer.queue(object);

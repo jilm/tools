@@ -298,7 +298,6 @@ public class XMLReader extends DefaultHandler {
     }
 
     private File file;
-
   public void load(File file) {
     try {
         this.file = file;

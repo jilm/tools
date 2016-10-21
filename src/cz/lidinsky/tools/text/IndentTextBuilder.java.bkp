@@ -1,0 +1,76 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package cz.lidinsky.tools.text;
+
+/**
+ *  It is a builder which keeps track of indention.
+ */
+public class IndentTextBuilder extends TextBuilder {
+
+  private final TextBuilder builder;
+  private String prefix;
+  private int level;
+
+  public IndentTextBuilder(TextBuilder builder) {
+    this.level = 0;
+    this.builder = builder;
+    this.prefix = "  ";
+    this.newLine = true;
+  }
+
+  /**
+   * Increase indention level. Increased level have no impact to the actual
+   * line of text. Next line will be indented.
+   */
+  public void indent() {
+    level++;
+  }
+
+  /**
+   * Decrease indention level. If the level is already zero, nothing happens.
+   */
+  public void unindent() {
+    level = level > 0 ? level - 1 : 0;
+  }
+
+  /**
+   * Returns the indention level.
+   */
+  public int getIndentLevel() {
+    return level;
+  }
+
+  private boolean newLine;
+
+  /**
+   * Starts new line.
+   */
+  public void newLine() {
+    builder.append("\n");
+    this.newLine = true;
+  }
+
+  @Override
+  public String toString() {
+    return builder.toString();
+  }
+
+  public int getIndentLength() {
+    return level * prefix.length();
+  }
+
+  @Override
+    protected void appendLine(String text) {
+      if (!isEmpty(text)) {
+        if (newLine) {
+          builder.append(repeat(prefix, level));
+          newLine = false;
+        }
+        builder.append(text);
+      }
+    }
+
+}

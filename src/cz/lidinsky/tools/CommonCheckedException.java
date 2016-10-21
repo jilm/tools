@@ -18,21 +18,14 @@
 
 package cz.lidinsky.tools;
 
-import cz.lidinsky.tools.text.StrBuffer;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.lang.reflect.InvocationTargetException;
 
-/**
- * An exception which contains a map which allows to attach additional
- * information.
- */
-public class CommonException extends RuntimeException {
+public class CommonCheckedException extends Exception {
 
-  public CommonException() {
+  public CommonCheckedException() {
     super();
   }
 
@@ -42,7 +35,7 @@ public class CommonException extends RuntimeException {
   /**
    *  Sets the exception code.
    */
-  public CommonException setCode(ExceptionCode code) {
+  public CommonCheckedException setCode(ExceptionCode code) {
     this.code = code;
     return this;
   }
@@ -63,8 +56,8 @@ public class CommonException extends RuntimeException {
   public static ExceptionCode getCode(Throwable throwable) {
     if (throwable == null) {
       return ExceptionCode.NOT_SPECIFIED;
-    } else if (throwable instanceof CommonException) {
-      return ((CommonException)throwable).getCode();
+    } else if (throwable instanceof CommonCheckedException) {
+      return ((CommonCheckedException)throwable).getCode();
     } else {
       for (ExceptionCode ec : ExceptionCode.values()) {
         if (ec.getCounterpart() == throwable.getClass()) {
@@ -81,7 +74,7 @@ public class CommonException extends RuntimeException {
   /**
    *  Sets the cause of the exception.
    */
-  public CommonException setCause(Throwable cause) {
+  public CommonCheckedException setCause(Throwable cause) {
     this.cause = cause;
     while (this.cause instanceof InvocationTargetException) {
       this.cause = ((InvocationTargetException)this.cause).getTargetException();
@@ -101,7 +94,7 @@ public class CommonException extends RuntimeException {
    *  Allows to attache additional information, mainly conditions that
    *  could be important to find out what is going on.
    */
-  public CommonException set(String key, String value) {
+  public CommonCheckedException set(String key, String value) {
     if (key != null) {
       if (value != null) {
         fields.put(key, value);
@@ -112,14 +105,14 @@ public class CommonException extends RuntimeException {
     return this;
   }
 
-  public CommonException set(String key, int value) {
+  public CommonCheckedException set(String key, int value) {
     if (key != null) {
       fields.put(key, Integer.valueOf(value).toString());
     }
     return this;
   }
 
-  public CommonException set(String key, Object value) {
+  public CommonCheckedException set(String key, Object value) {
     if (key != null) {
       if (value != null) {
         fields.put(key, value.toString());
@@ -145,58 +138,6 @@ public class CommonException extends RuntimeException {
 
   @Override
   public String toString() {
-    return new cz.lidinsky.tools.text.ExceptionStatementBuilder().toString(this);
-    //StrBuffer buffer = new StrBuffer();
-    //toString(buffer);
-    //return new Formatter().format(new StrIterator(buffer.toString()));
-  }
-
-  public void toString(StrBuffer sb) {
-    //StrBuffer sb = new StrBuffer();
-    List<Throwable> chain = getExceptionChain(this);
-    Collections.reverse(chain);
-    sb.appendHead("A detailed statement of the exception.");
-    // list of all of the exception classes in the chain
-    sb.appendSubHead("Exception chain")
-            .startOrderedList();
-    chain.stream()
-            .forEach(
-              e -> sb.startItem()
-                     .append(getCode(e).name())
-                     .appendInBrackets(e.getClass().getSimpleName()));
-    //sb.closeList();
-    // print all of the messages
-    sb.appendHead("Messages")
-            .startOrderedList();
-    chain.stream()
-            .forEach(
-              e -> sb.startItem()
-                     .append(e.getMessage()));
-    //sb.closeList();
-    // print details
-    Map<String, String> more = getMore(chain);
-    sb.appendHead("Details")
-      .startUnorderedList();
-    more.entrySet().stream()
-      .forEach(entry -> sb.startItem(entry.getKey())
-          .append(entry.getValue()));
-    //sb.closeList();
-    // print stack info
-    sb.appendHead("Stack info")
-      .startOrderedList();
-    chain.stream()
-      .filter(e -> e.getStackTrace().length > 0)
-      .map(e -> e.getStackTrace()[0])
-      .forEach(trace -> sb.startItem()
-          .append(trace.getClassName() + "#" + trace.getMethodName()));
-    //sb.closeList();
-    // return result
-    //return sb.toString();
-    // return result
-    //return sb.toString();
-  }
-
-  public String toStringOld() {
     // header
     StringBuilder sb = new StringBuilder()
       .append("An EXCEPTION was thrown! Detailed statement follows.\n")
@@ -226,15 +167,6 @@ public class CommonException extends RuntimeException {
     return index + 1;
   }
 
-  private static List<Throwable> getExceptionChain(Throwable e) {
-    List<Throwable> result = new ArrayList<>();
-    while (e != null) {
-      result.add(e);
-      e = e.getCause();
-    }
-    return result;
-  }
-
   private int printExceptionChain(StringBuilder sb, Throwable e) {
     if (e == null) return 1;
     Throwable cause = e.getCause();
@@ -255,9 +187,9 @@ public class CommonException extends RuntimeException {
     java.util.SortedSet<String> data = new java.util.TreeSet<String>();
     Throwable cause = e;
     while (cause != null) {
-      if (cause instanceof CommonException) {
+      if (cause instanceof CommonCheckedException) {
         for (Map.Entry<String, String> entry
-            : ((CommonException)cause).fields.entrySet()) {
+            : ((CommonCheckedException)cause).fields.entrySet()) {
           data.add(entry.getKey() + ": " + entry.getValue());
         }
       }
@@ -269,15 +201,6 @@ public class CommonException extends RuntimeException {
         .append("\n");
     }
 
-  }
-
-  private Map<String, String> getMore(List<Throwable> chain) {
-    Map<String, String> result = new HashMap<>();
-    chain.stream()
-         .filter(e -> e instanceof CommonException)
-         .map(e -> (CommonException)e)
-         .forEach(e -> result.putAll(e.fields));
-    return result;
   }
 
   private int printStackInfo(StringBuilder sb, Throwable e) {
@@ -293,17 +216,6 @@ public class CommonException extends RuntimeException {
         .append("\n");
     }
     return index + 1;
-  }
-
-  public static void main(String[] args) {
-    CommonException e = new CommonException()
-      .setCode(ExceptionCode.NULL_POINTER)
-      .set("message", "This is a message of the exception!")
-      .set("key1", "more specific information 1")
-      .set("key2", "more specific information nr. 2.")
-      .set("key3", "the last row of some specific information. This time, the row is longer than the number of characters per one screen line!");
-
-    System.out.println(e.toString());
   }
 
 }

@@ -1,127 +1,73 @@
-<?xml version="1.0"?>
-<project name="tools" basedir="." default="compile">
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<!-- By default, only the Clean and Build commands use this build script. -->
+<!-- Commands such as Run, Debug, and Test only use this build script if -->
+<!-- the Compile on Save feature is turned off for the project. -->
+<!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
+<!-- in the project's Project Properties dialog box.-->
+<project name="tools" default="default" basedir=".">
+    <description>Builds, tests, and runs the project tools.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <!--
 
-    <description>
-	This build file is used to compile the tools.
-    </description>
+    There exist several targets which are by default empty and which can be 
+    used for execution of your tasks. These targets are usually executed 
+    before and after some main targets. They are: 
 
-    <!-- Name of the software to build -->
-    <property name="sw.name" value="lidinsky-tools" />
+      -pre-init:                 called before initialization of project properties
+      -post-init:                called after initialization of project properties
+      -pre-compile:              called before javac compilation
+      -post-compile:             called after javac compilation
+      -pre-compile-single:       called before javac compilation of single file
+      -post-compile-single:      called after javac compilation of single file
+      -pre-compile-test:         called before javac compilation of JUnit tests
+      -post-compile-test:        called after javac compilation of JUnit tests
+      -pre-compile-test-single:  called before javac compilation of single JUnit test
+      -post-compile-test-single: called after javac compilation of single JUunit test
+      -pre-jar:                  called before JAR building
+      -post-jar:                 called after JAR building
+      -post-clean:               called after cleaning build products
 
-    <property name="srcdir" location="src" />
-    <property name="bindir" location="bin" />
-    <property name="docdir" location="doc" />
-    <property name="testsrcdir" location="test" />
-    <property name="reports" location="reports" />
-    <property name="jarname" value="${sw.name}.jar" />
+    (Targets beginning with '-' are not intended to be called on their own.)
 
-    <target name="init">
-	<tstamp />
-    </target>
+    Example of inserting an obfuscator after compilation could look like this:
 
-    <target name="clean" depends="init"
-	    description="Removes all except source code directory.">
-        <delete dir="${bindir}" />
-        <delete dir="${docdir}" />
-        <delete dir="${reports}" />
-    </target>
+        <target name="-post-compile">
+            <obfuscate>
+                <fileset dir="${build.classes.dir}"/>
+            </obfuscate>
+        </target>
 
-    <target name="compile" depends="init" 
-	    description="Compiles the application">
-        <mkdir dir="${bindir}" />
-	<depend srcdir="${srcdir}" destdir="${bindir}" />
-        <javac srcdir="${srcdir}" destdir="${bindir}" 
-	    deprecation="no"
-            classpath="depend/commons-lang3.jar:depend/commons-collections.jar:depend/json.jar"
-	/>
-    </target>
+    For list of available properties check the imported 
+    nbproject/build-impl.xml file. 
 
-    <target name="test" depends="compile" >
-        <javac srcdir="${testsrcdir}" destdir="${bindir}" 
-            classpath="depend/commons-lang3.jar:depend/commons-collections.jar:depend/junit.jar:depend/json.jar"
-	    />
-	<mkdir dir="${reports}" />
-        <junit printsummary="yes" haltonfailure="yes">
-	    <classpath>
-	        <pathelement location="${bindir}" />
-                <pathelement path="${java.class.path}" />
-                <pathelement path="depend/commons-lang3.jar:depend/commons-collections.jar:depend/junit.jar:depend/json.jar" />
-	    </classpath>
-	    <formatter type="plain" />
-	    <batchtest fork="yes" todir="${reports}">
-	        <fileset dir="${testsrcdir}">
-		    <include name="**/*Test.java" />
-		</fileset>
-	    </batchtest>
-	</junit>
-    </target>
-    
-    <target name="doc" description="Generates documentation.">
-        <javadoc destdir="${docdir}" access="package" >
-            <fileset dir="${srcdir}">
-                <include name="**/*.java" />
-            </fileset>
-	    <classpath>
-                <pathelement path="depend/commons-lang3.jar:depend/commons-collections.jar:depend/junit.jar:depend/json.jar" />
-	    </classpath>
-        </javadoc>
-    </target>
-    
-    <target name="pack">
-        <zip destfile="control4j.zip">
-            <fileset dir="${srcdir}"  />
-        </zip>
-    </target>
-    
-    <target name="unpack">
-        <delete dir="${srcdir}" />
-        <!--<delete dir="conf" />-->
-        <unzip src="control4j.zip" dest="." />
-        <fixcrlf srcdir="${srcdir}" />
-        <!--<fixcrlf srcdir="conf" />-->
-    </target>
-    
-    <target name="jar" depends="compile, init" 
-	    description="Creates a JAR file.">
-    	<jar destfile="${jarname}">
-            <fileset dir="${bindir}" />
-	    <!--
-	    <manifest >
-	        <attribute name="Main-Class" value="" />
-		<section name="common">
-		    <attribute name="Implementation-Version" 
-			       value="${sw.version}" />
-		</section>
-	    </manifest>
-	    -->
-	</jar>
-    </target>
 
-    <target name="ap" depends="clean" >
-        <mkdir dir="${bindir}" />
-	<depend srcdir="${srcdir}" destdir="${bindir}" />
-        <javac srcdir="${srcdir}/control4j/annotations" destdir="${bindir}" 
-            excludes=""
-	    deprecation="no"
-	/>
-        <mkdir dir="${bindir}/META-INF" />
-        <mkdir dir="${bindir}/META-INF/services" />
-        <echo
-	    message="control4j.annotations.process.GuiObjectProcessor"
-	    file="${bindir}/META-INF/services/javax.annotation.processing.Processor" />
-    </target>
+    Another way to customize the build is by overriding existing main targets.
+    The targets of interest are: 
 
-    <!-- Takes a hash of the last commit from git repository -->
-    <target name="version" depends="init" >
-	<exec executable="git" 
-	      outputproperty="sw.version" 
-	      resultproperty="git.result"
-	      failifexecutionfails="false" >
-	    <arg line="log --pretty=format:%H -n 1" />
-	</exec>
-        <property name="sw.version" value="?" />
-	<echo>${sw.version}</echo>
-    </target>
+      -init-macrodef-javac:     defines macro for javac compilation
+      -init-macrodef-junit:     defines macro for junit execution
+      -init-macrodef-debug:     defines macro for class debugging
+      -init-macrodef-java:      defines macro for class execution
+      -do-jar:                  JAR building
+      run:                      execution of project 
+      -javadoc-build:           Javadoc generation
+      test-report:              JUnit report generation
 
+    An example of overriding the target for project execution could look like this:
+
+        <target name="run" depends="tools-impl.jar">
+            <exec dir="bin" executable="launcher.exe">
+                <arg file="${dist.jar}"/>
+            </exec>
+        </target>
+
+    Notice that the overridden target depends on the jar target and not only on 
+    the compile target as the regular run target does. Again, for a list of available 
+    properties which you can use, check the target you are overriding in the
+    nbproject/build-impl.xml file. 
+
+    -->
 </project>
-

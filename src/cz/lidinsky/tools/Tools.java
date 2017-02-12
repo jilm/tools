@@ -5,11 +5,31 @@
  */
 package cz.lidinsky.tools;
 
+import java.io.IOException;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author jilm
  */
 public class Tools {
+
+
+  public static void close(java.io.Closeable object)
+  {
+    if (object != null)
+      try
+      {
+	object.close();
+      }
+      catch (java.io.IOException e)
+      {
+      }
+  }
+
+
 
   public static boolean equals(Object object1, Object object2) {
     if (object1 == null || object2 == null) {
@@ -52,4 +72,19 @@ public class Tools {
               .set("value", value);
     }
   }
+
+  /**
+   *
+   */
+  public static final Properties properties = new Properties();
+
+  static {
+    try {
+      properties.load(
+              Tools.class.getClassLoader().getResourceAsStream("cz/lidinsky/tools/configuration.properties"));
+    } catch (IOException ex) {
+      Logger.getLogger(Tools.class.getName()).log(Level.SEVERE, null, ex);
+    }
+  }
+
 }

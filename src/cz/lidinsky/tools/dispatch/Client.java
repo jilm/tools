@@ -36,7 +36,13 @@ public class Client {
     private final JSONTokener reader;
     private final Set<Consumer> consumers;
 
+    private final String host;
+
+    private final int port;
+
     public Client(String host, int port) throws IOException {
+      this.host = host;
+      this.port = port;
         Socket socket = new Socket(host, port);
         writer = new OutputStreamWriter(socket.getOutputStream());
         reader = new JSONTokener(socket.getInputStream());
